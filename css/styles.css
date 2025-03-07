@@ -1,0 +1,44 @@
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5;
+    overflow: hidden;
+    box-sizing: border-box;
+    position: fixed; /* Prevents mobile bounce effects */
+    touch-action: none; /* Disables pinch zoom and other touch actions */
+}
+
+* {
+    box-sizing: inherit;
+    -webkit-overflow-scrolling: none;
+    overflow: hidden;
+}
+
+html {
+    overflow: hidden;
+    height: 100%;
+}
+
+h1 {
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: min(5vw, 36px);
+}
+
+#game-container, .container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    display: block;
+}
