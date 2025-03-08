@@ -140,13 +140,19 @@ function drawPlayerDots(playerCanvas, shiftXlist=0, shiftYlist=0) {
 
         playerCanvas.ctx.beginPath();
         playerCanvas.ctx.arc(canvasPoint.x+shiftX, canvasPoint.y+shiftY, dot.radius, 0, Math.PI * 2);
+        // playerCanvas.ctx.strokeStyle = '#888888';
+        // playerCanvas.ctx.stroke();
+        playerCanvas.player.color.split("(")[0] === "hsl" || error("Color should be in hsl format");
+        playerCanvas.ctx.fillStyle = `hsla(${playerCanvas.player.color.split("(")[1].split(")")[0]}, 0.1)`;
+        playerCanvas.ctx.fill();
         playerCanvas.ctx.font = `${2.5 * baseUnit}px Arial`; // change emoji size
         playerCanvas.ctx.textAlign = 'center';
         playerCanvas.ctx.textBaseline = 'middle';
+        playerCanvas.ctx.fillStyle = 'white';
+        playerCanvas.ctx.globalAlpha = 1;
         playerCanvas.ctx.fillText(emoji, canvasPoint.x+shiftX, canvasPoint.y+shiftY);
     });
 }
-
 
 
 function isPointInDot(x, y, dot, playerCanvas) {
@@ -173,14 +179,21 @@ function isPointInDot(x, y, dot, playerCanvas) {
     return (dx * dx + dy * dy) <= (dot.radius * dot.radius);
 }
 
-
-
 // Function to reset the game when player count changes
 function resetGame() {
     // Reset game state
+    const playerArea = sideLength * 2 + 1
+    gameState.maxT = gameState.numberOfPlayers * playerArea;
+    gameState.pivotIndex = Array.from({ length: gameState.numberOfPlayers }, (_, i) => (i * playerArea));
+    gameState.safeIndex = [
+        ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * playerArea) + 2) % gameState.maxT),
+        ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * playerArea) - 3 + gameState.maxT) % gameState.maxT)
+    ].sort((a, b) => a - b);
+    gameState.autoMover = Array.from({ length: gameState.numberOfPlayers }, () => false);
     gameState.currentPlayerIndex = 0;
-    gameState.maxT = gameState.numberOfPlayers * (sideLength * 2 + 1);
     gameState.animating = false;
+
+
     
     // Recreate players array with new count
     usedPawns = new Set();
@@ -200,6 +213,9 @@ function resetGame() {
     
     // Re-add background canvas
     container.appendChild(bgCanvas);
+
+    // Re-add title
+    container.appendChild(gameTitle);
     
     // Create new player canvases
     playerCanvases.length = 0;
@@ -271,7 +287,6 @@ function resetGame() {
     // Reset game info
     updateGameInfo(`${players[gameState.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
 }
-
 
 function createAutoButton() {
     const autoButton = document.createElement('button');

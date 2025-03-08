@@ -22,9 +22,11 @@ let gameState = {
     diceRolled: false,  // Track if dice has been rolled this turn
     lastRoll: null,      // Store the last rolled value
     dieFaces: 6,
+    extraTurn: false,
 };
 gameState.numberOfPlayers = 4;
 gameState.maxT = gameState.numberOfPlayers * (sideLength * 2 + 1);
+gameState.pivotIndex = Array.from({ length: gameState.numberOfPlayers }, (_, i) => (i * (sideLength * 2 + 1)));
 gameState.safeIndex = [
     ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * (sideLength * 2 + 1)) + 2) % gameState.maxT),
     ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * (sideLength * 2 + 1)) - 3 + gameState.maxT) % gameState.maxT)

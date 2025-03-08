@@ -31,7 +31,7 @@ gameTitle.textContent = 'Ludo';
 gameTitle.style.position = 'absolute';
 gameTitle.style.top = '6px';
 gameTitle.style.left = '0';
-gameTitle.style.width = '100%';
+gameTitle.style.width = 'auto';
 gameTitle.style.textAlign = 'left';
 gameTitle.style.fontSize = '36px';
 gameTitle.style.fontWeight = 'bold';
@@ -182,7 +182,7 @@ function drawCurves(maxT = gameState.maxT) {
         bgCtx.font = `${2 * gridRadius}px Arial`;
         bgCtx.textAlign = 'center';
         bgCtx.textBaseline = 'middle';
-        bgCtx.fillStyle = getPlayerColor(index, 100, 98, pathPoints.length);
+        bgCtx.fillStyle = getPlayerColor(index, 100, 97, pathPoints.length);
         bgCtx.fill();
         bgCtx.fillStyle = 'black'; // Reset color for text
         // Style the circle based on position
@@ -229,7 +229,6 @@ function drawCurves(maxT = gameState.maxT) {
             bgCtx.save();
             bgCtx.translate(canvasPoint.x, canvasPoint.y);
             bgCtx.rotate(((2 == gameState.numberOfPlayers ? 0.25 : -0.5)+(0.5+index/(sideLength * 2 + 1))/gameState.numberOfPlayers) * (2 * Math.PI));
-            // ((2 == gameState.numberOfPlayers ? 0 : -0.5) + 0.5 - index / (sideLength * 2 + 1) / gameState.numberOfPlayers)
             bgCtx.fillText(getRandomArrow(), 0, 0);
             bgCtx.restore();
 
@@ -325,7 +324,7 @@ function updateDimensions() {
     // Update all dots with new radius
     playerCanvases.forEach(pc => {
         pc.dots.forEach(dot => {
-            dot.radius = 3 * baseUnit / Math.sqrt(gameState.numberOfPlayers);
+            dot.radius = 3.5 * baseUnit / Math.sqrt(gameState.numberOfPlayers);
         });
     });
     
@@ -363,7 +362,7 @@ function updateVisualElements() {
     // Scale everything with baseUnit
     playerCanvases.forEach(pc => {
         pc.dots.forEach(dot => {
-            dot.radius = 3 * baseUnit / Math.sqrt(gameState.numberOfPlayers); // Smaller than grid circles
+            dot.radius = 3.5 * baseUnit / Math.sqrt(gameState.numberOfPlayers); // Smaller than grid circles
 
             // Recalculate dot positions after resize
             if (dot.inStartingArea) {
@@ -448,13 +447,15 @@ function initializeDots() {
         for (let i = 0; i < gameState.dotsPerPlayer; i++) {
             playerCanvas.dots.push({
                 inStartingArea: true,
+                inHomePath: false,
+                homePathStep: 0,
                 startingPosition: i,
                 startPositions: positions,
                 pathEntryIndex: pathStartingIndex,
-                index: -1, // Not on path yet
+                index: -1,
                 moving: false,
                 targetIndex: -1,
-                radius: 3 * baseUnit / Math.sqrt(gameState.numberOfPlayers)
+                radius: 3.5 * baseUnit / Math.sqrt(gameState.numberOfPlayers)
             });
         }
         

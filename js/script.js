@@ -131,17 +131,21 @@ function nextTurn() {
     // remove auto button if last player
     const autoButton = document.getElementById('auto-container');
     gameState.diceRolled && gameState.currentPlayerIndex == gameState.numberOfPlayers - 1 && (autoButton.style.display = 'none');
-
+    
     // Move to next player
-    gameState.dieFaces == gameState.lastRoll || (gameState.currentPlayerIndex++);
+    gameState.dieFaces === gameState.lastRoll || gameState.extraTurn || (gameState.currentPlayerIndex++);
     gameState.currentPlayerIndex = gameState.currentPlayerIndex % players.length;
     gameState.diceRolled = false; // Reset dice rolled state
     gameState.lastRoll = null;    // Clear last roll
+    gameState.extraTurn = false;  // Reset extra turn state
     
+    // Set z-index for all canvases
+    playerCanvases.forEach((pc, index) => {
+        pc.canvas.style.zIndex = 5 + (index == gameState.currentPlayerIndex);
+    });
 
     // Update dice appearance for new player
     updateDiceLocation(true);
-    
     updateGameInfo(`${players[gameState.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
     
     // Check if the current player is an autoMover
