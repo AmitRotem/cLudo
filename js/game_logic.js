@@ -14,10 +14,6 @@
 function myMaxRandom(numberOfDices = 1) {
     numberOfDices > 1 && console.log(`Rolling ${numberOfDices} dice`);
     const rolls = Array.from({ length: numberOfDices }, () => Math.floor(Math.random() * gameState.dieFaces) + 1);
-    if (!gameState.autoMover[gameState.currentPlayerIndex]) {
-        const userNumber = parseInt(prompt("Enter a number:"));
-        return userNumber;
-    }
     return Math.max(...rolls);
 }
 
