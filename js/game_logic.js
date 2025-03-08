@@ -7,6 +7,10 @@
 // TODO; preper to quantize the game - add `state` and `pattern` to playerCanvas, add `measurement` and `project` functions, redestribute pattern in starting area if possible, finally add `selfInteraction` function (game start classical, then quantum effects comes in via `selfInteraction`, like in a HOM experiment)
 // TODO; movement along home path should be in jumps, like in main path, not in one go
 
+//* Note; most of the logic is done here!
+// see also `nextTurn` in `js/script.js`
+// see also `handleDiceClick` in `js/animations.js`
+
 function myMaxRandom(numberOfDices = 1) {
     numberOfDices > 1 && console.log(`Rolling ${numberOfDices} dice`);
     const rolls = Array.from({ length: numberOfDices }, () => Math.floor(Math.random() * gameState.dieFaces) + 1);
