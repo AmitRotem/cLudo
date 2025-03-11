@@ -4,6 +4,22 @@
 // Home path movement
 
 
+// Load sound files
+const sounds = {
+    start: new Audio('sounds/mixkit-long-pop-2358.wav'),
+    collision: new Audio('sounds/mixkit-wrong-answer-fail-notification-946.wav'),
+    home: new Audio('sounds/mixkit-gaming-lock-2848.wav'),
+    win: new Audio('sounds/mixkit-happy-bells-notification-937.wav'),
+    turn: new Audio('sounds/mixkit-message-pop-alert-2354.mp3')
+};
+
+// Function to play sound
+function playSound(sound) {
+    if (sounds[sound]) {
+        sounds[sound].play();
+    }
+}
+
 // Animate dice roll when clicked
 function handleDiceClick() {
     // Prevent multiple rolls in one turn
@@ -74,6 +90,7 @@ function handleDiceClick() {
 
 // Animate a sequence of individual steps based on dice roll
 function moveMultipleSteps(playerCanvas, dotIndex, steps, direction, onComplete) {
+    // console.log("moveMultipleSteps");
     const dot = playerCanvas.dots[dotIndex];
     let stepsRemaining = steps;
     let currentIndex = dot.index;
@@ -120,6 +137,7 @@ function moveMultipleSteps(playerCanvas, dotIndex, steps, direction, onComplete)
 
 // Move dot along home path
 function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
+    // console.log("moveAlongHomePath");
     const dot = playerCanvas.dots[dotIndex];
     dot.moving = true;
     gameState.animating = true;
@@ -148,7 +166,7 @@ function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
     
     // Animate the movement
     const startPosition = dot.homePathPosition;
-    const duration = 200; // Fixed duration for a single step
+    const duration = 400 * steps; // Fixed duration for a single step
     const startTime = performance.now();
     
     updateGameInfo(`${playerCanvas.player.name}'s dot is moving along home path...`);
@@ -162,8 +180,8 @@ function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
         
         // Simple linear interpolation between points
         dot.homePathPosition = {
-            x: startPosition.x + (newPosition.x - startPosition.x) * easedProgress,
-            y: startPosition.y + (newPosition.y - startPosition.y) * easedProgress
+            x: startPosition.x + (newPosition.x - startPosition.x) * (easedProgress - Math.sin(easedProgress*steps*2*Math.PI)/(steps*2*Math.PI)),
+            y: startPosition.y + (newPosition.y - startPosition.y) * (easedProgress - Math.sin(easedProgress*steps*2*Math.PI)/(steps*2*Math.PI))
         };
         
         drawPlayerDots(playerCanvas);
@@ -181,6 +199,7 @@ function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
                 dot.reachedHome = true;
                 gameState.extraTurn = true;
                 updateGameInfo(`${playerCanvas.player.name}'s dot reached home!`);
+                playSound('home');
             }
             if (onComplete) {onComplete();};
         }
@@ -191,6 +210,7 @@ function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
 
 // Animate teleporting from starting area to path entry point
 function animateDotTeleport(playerCanvas, dotIndex, targetPosition, OnComplete) {
+    // console.log("animateDotTeleport");
     const dot = playerCanvas.dots[dotIndex];
     dot.moving = true;
     gameState.animating = true;
@@ -243,15 +263,16 @@ function animateDotTeleport(playerCanvas, dotIndex, targetPosition, OnComplete) 
 
 // Animate a single step with callback when complete
 function animateSingleStep(playerCanvas, dotIndex, targetIndex, onComplete) {
+    // console.log("animateSingleStep");
     const dot = playerCanvas.dots[dotIndex];
     dot.moving = true;
     dot.targetIndex = targetIndex;
-    const allAutoMovers = gameState.autoMover.every(autoMover => autoMover);
-
     const startIndex = dot.index;
+    const allAutoMovers = gameState.autoMover.every(autoMover => autoMover);
     
+    const goingBackwards = (targetIndex - startIndex + pathPoints.length) % pathPoints.length > pathPoints.length / 2;
     // Single step animation is always a distance of 1
-    const duration = (allAutoMovers ? fastSpeedFactor : 1)*200; // Fixed duration for a single step
+    const duration = ((allAutoMovers || goingBackwards) ? fastSpeedFactor : 1)*200; // Fixed duration for a single step
     const startTime = performance.now();
     
     function animateStep(timestamp) {
@@ -297,6 +318,7 @@ function animateSingleStep(playerCanvas, dotIndex, targetIndex, onComplete) {
 
 // Move dot to home path entry and set up remaining steps
 function moveToHomePathEntry(playerCanvas, dotIndex, remainingSteps, onComplete) {
+    // console.log("moveToHomePathEntry");
     const dot = playerCanvas.dots[dotIndex];
     dot.moving = true;
     gameState.animating = true;
@@ -308,7 +330,7 @@ function moveToHomePathEntry(playerCanvas, dotIndex, remainingSteps, onComplete)
     
     // Calculate steps to pivot
     let stepsToMove;
-    if (dot.index < pivotIndex) {
+    if (dot.index <= pivotIndex) {
         stepsToMove = pivotIndex - dot.index;
     } else {
         stepsToMove = (pathPoints.length - dot.index) + pivotIndex;
@@ -336,55 +358,6 @@ function moveToHomePathEntry(playerCanvas, dotIndex, remainingSteps, onComplete)
         moveAlongHomePath(playerCanvas, dotIndex, remainingSteps, onComplete);
     });
 }
-
-
-// Move dot to home (final position)
-// function moveToHome(playerCanvas, dotIndex) {
-//     const dot = playerCanvas.dots[dotIndex];
-//     dot.moving = true;
-//     gameState.animating = true;
-    
-//     // Get the board center
-//     const boardCenter = { x: bgCanvas.width / 2, y: bgCanvas.height / 2 };
-    
-//     // Animate the movement to home
-//     const startPosition = dot.homePathPosition;
-//     const duration = 500; // Fixed duration for reaching home
-//     const startTime = performance.now();
-    
-//     updateGameInfo(`${playerCanvas.player.name}'s dot reached home!`);
-    
-//     function animateStep(timestamp) {
-//         const elapsed = timestamp - startTime;
-//         const progress = Math.min(elapsed / duration, 1);
-        
-//         // Easing function for smoother movement
-//         const easedProgress = 1 - Math.pow(1 - progress, 3); // Cubic ease out
-        
-//         // Simple linear interpolation between points
-//         dot.homePathPosition = {
-//             x: startPosition.x + (boardCenter.x - startPosition.x) * easedProgress,
-//             y: startPosition.y + (boardCenter.y - startPosition.y) * easedProgress
-//         };
-        
-//         drawPlayerDots(playerCanvas);
-        
-//         if (progress < 1) {
-//             requestAnimationFrame(animateStep);
-//         } else {
-//             dot.moving = false;
-//             dot.reachedHome = true;
-//             dot.homePathStep = 5;
-//             dot.stepsToHome = 0;
-//             gameState.animating = false;
-            
-//             // Check if all dots reached home
-//             checkWinCondition(playerCanvas);
-//         }
-//     }
-    
-//     requestAnimationFrame(animateStep);
-// }
 
 
 function animateMoveableDots(currentPlayerCanvas, moveAmount) {

@@ -33,7 +33,7 @@ function createPlayerControls() {
     upButton.style.fontSize = `${baseUnit * 1}px`;
     upButton.style.marginBottom = `${baseUnit * 0.3}px`;
     upButton.style.cursor = 'pointer';
-    upButton.style.backgroundColor = '#4CAF50';
+    upButton.style.backgroundColor = 'hsl(122, 39%, 49%)'; // up button color
     upButton.style.color = 'white';
     upButton.style.border = 'none';
     upButton.style.borderRadius = `${baseUnit * 0.5}px`;
@@ -45,20 +45,24 @@ function createPlayerControls() {
     downButton.style.height = `${baseUnit * 2.5}px`;
     downButton.style.fontSize = `${baseUnit * 1}px`;
     downButton.style.cursor = 'pointer';
-    downButton.style.backgroundColor = '#f44336';
+    downButton.style.backgroundColor = 'hsl(4, 90%, 58%)'; // down button color
     downButton.style.color = 'white';
     downButton.style.border = 'none';
     downButton.style.borderRadius = `${baseUnit * 0.5}px`;
     buttonContainer.appendChild(downButton);
 
     upButton.addEventListener('click', () => {
-        gameState.numberOfPlayers++;
+        if (gameState.numberOfPlayers < 10) {
+            gameState.numberOfPlayers++;
+        }
         playerCountDisplay.textContent = gameState.numberOfPlayers.toString();
         resetGame();
     });
 
     downButton.addEventListener('click', () => {
-        gameState.numberOfPlayers--;
+        if (gameState.numberOfPlayers > 1) {
+            gameState.numberOfPlayers--;
+        }
         playerCountDisplay.textContent = gameState.numberOfPlayers.toString();
         resetGame();
     });
@@ -78,7 +82,7 @@ function createDiceElement() {
     const diceContainer = document.createElement('div');
     diceContainer.id = 'dice-container';
     diceContainer.style.position = 'absolute';
-    diceContainer.style.backgroundColor = 'white';
+    diceContainer.style.backgroundColor = 'hsla(0, 0%, 50%, 0.10)'; // dice background color
     diceContainer.style.width = `${baseUnit * 6}px`;
     diceContainer.style.height = `${baseUnit * 6}px`;
     // diceContainer.style.top = `${baseUnit * 6}px`;
@@ -143,7 +147,7 @@ function drawPlayerDots(playerCanvas, shiftXlist=0, shiftYlist=0) {
         // playerCanvas.ctx.strokeStyle = '#888888';
         // playerCanvas.ctx.stroke();
         playerCanvas.player.color.split("(")[0] === "hsl" || error("Color should be in hsl format");
-        playerCanvas.ctx.fillStyle = `hsla(${playerCanvas.player.color.split("(")[1].split(")")[0]}, 0.1)`;
+        playerCanvas.ctx.fillStyle = `hsla(${playerCanvas.player.color.split("(")[1].split(")")[0]}, 0.3)`; // dot background color
         playerCanvas.ctx.fill();
         playerCanvas.ctx.font = `${2.5 * baseUnit}px Arial`; // change emoji size
         playerCanvas.ctx.textAlign = 'center';
@@ -182,6 +186,11 @@ function isPointInDot(x, y, dot, playerCanvas) {
 // Function to reset the game when player count changes
 function resetGame() {
     // Reset game state
+    // calc board size based on number of players
+    // max should be 2.1*1.5 !!
+    gameState.boardRadius = 2;
+    gameState.boardSizeFactor = gameState.boardRadius * 2;
+    // reset other stuff
     const playerArea = sideLength * 2 + 1
     gameState.maxT = gameState.numberOfPlayers * playerArea;
     gameState.pivotIndex = Array.from({ length: gameState.numberOfPlayers }, (_, i) => (i * playerArea));
@@ -298,7 +307,7 @@ function createAutoButton() {
     autoButton.style.padding = '10px 20px';
     autoButton.style.fontSize = '16px';
     autoButton.style.cursor = 'pointer';
-    autoButton.style.backgroundColor = '#007BFF';
+    autoButton.style.backgroundColor = 'hsl(211, 100%, 50%)'; // auto button color
     autoButton.style.color = 'white';
     autoButton.style.border = 'none';
     autoButton.style.borderRadius = '5px';

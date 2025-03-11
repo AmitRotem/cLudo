@@ -33,7 +33,7 @@ function getPlayerColor(k, s=100, l=50, playerCount=1) {
 }
 
 function getRandomPawn(ty = 0) {
-    const pawns = ['💩 👻 🐒 🦍 🦧 🐕 🦮 🐕‍🦺 🐩 🐈 🐈‍⬛ 🐅 🐆 🐎 🦓 🦌 🦬 🐂 🐃 🐄 🐖 🐏 🐑 🐐 🐪 🐫 🦙 🦒 🦘 🦥 🦦 🦨 🦘 🦡 🦃 🐔 🐓 🐣 🐤 🐥 🐦 🐧 🐦 🦉 🦅 🦆 🦢 🦜 🦩 🕊️ 🐊 🐢 🦎 🐍 🐲 🐉 🦕 🦖 🐳 🐋 🐬 🦭 🐟 🐠 🐡 🦈 🐙 🐚 🦀 🦞 🦐 🦑 🦪 🐌 🦋 🐛 🐜 🐝 🐞 🦗 🪳 🕷️ 🕸️ 🦂 🦟 🪰 🪲'.split(' '),
+    const pawns = ['💩 👻 🐒 🦍 🦧 🐕 🦮 🐕‍🦺 🐩 🐈 🐈‍⬛ 🐅 🐆 🐎 🦓 🦌 🦬 🐂 🐃 🐄 🐖 🐏 🐑 🐐 🐪 🐫 🦙 🦒 🦘 🦥 🦦 🦨 🦘 🦡 🦃 🐔 🐓 🐣 🐤 🐥 🐦 🐧 🐦 🦉 🦅 🦆 🦢 🦜 🦩 🕊️ 🐊 🐢 🦎 🐍 🐲 🐉 🦕 🦖 🐳 🐋 🐬 🦭 🐟 🐠 🐡 🦈 🐙 🐚 🦀 🦞 🦐 🦑 🦪 🐌 🦋 🐛 🐜 🐝 🐞 🦗 🕷️ 🕸️ 🦂 🦟 🪰 🪲'.split(' '),
         '😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😛 😝 😜 🤪 🤨 🧐 🤓 😎 🥸 🤩 🥳 😏 😒 😞 😔 😟 😕 🙁 ☹️ 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 🤯 😳 🥵 🥶 😱 😨 😰 😥 😓 🤗 🤔 🤭 🤫 🤥 😶 😐 😑 😬 🙄 😯 😦 😧 😮 😲 🥱 😴 🤤 😪 😵 🤐 🥴 🤢 🤮 🤧 😷 🤒 🤕 🤑 🤠'.split(' ')];
     // 😈
     return pawns[ty][Math.floor(Math.random() * pawns[ty].length)]
@@ -69,7 +69,6 @@ function pulse(theta, frequency, phaseOffset) {
     let p1 = 1.5;
     let p2 = 1;
     let drt = Math.cos(frequency * theta + phaseOffset);
-    drt = Math.cos(frequency * theta + phaseOffset);
     return 2*(1-(0.5-0.5*drt)**p1)**p2 - 1;
 }
 
@@ -77,12 +76,16 @@ function pulse(theta, frequency, phaseOffset) {
 function path(t) {
     const amplitude = 0.5;
     const frequency = gameState.numberOfPlayers;
-    const phaseOffset = ((2 == gameState.numberOfPlayers ? 0 : -0.5)/frequency) * 2 * Math.PI
+    const phaseOffset = (frequency % 2 == 0 ? -0.5 : -0.75)/frequency * 2 * Math.PI - Math.PI / 2;
     const theta = (-t/gameState.maxT) * 2 * Math.PI;
     
-    const radius = 1.8;
+    const radius = gameState.boardRadius;
     const drt = pulse(theta, frequency, 0);
     const xc = radius * (1 + amplitude * drt) * Math.cos(theta+phaseOffset);
     const yc = radius * (1 + amplitude * drt) * Math.sin(theta+phaseOffset);
     return {x:xc, y:yc};
+}
+
+function phaseFactor(i, N) {
+    return (i + (N % 2 == 0 ? 0.35 : 0.6)) * 2 * Math.PI / N + Math.PI / 2; // Fix phase here
 }

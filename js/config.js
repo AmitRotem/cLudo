@@ -4,11 +4,9 @@
 // Path parameters (amplitude, frequency, etc.)
 
 const sideLength = 6;
-const resParameter = 100;
+const resParameter = 150;
 // Add responsive design support
 let aspectRatio = 4/3; // Standard game board aspect ratio
-let scale = 1;
-let baseUnit = 10; // Base unit for scaling everything
 // animation speed
 const fastSpeedFactor = 0.2;
 
@@ -16,6 +14,7 @@ const fastSpeedFactor = 0.2;
 // Game state
 let gameState = {
     currentPlayerIndex: 0,
+    numberOfPlayers: 4,
     dotsPerPlayer: 4,
     pathToHome: sideLength,
     animating: false,
@@ -23,8 +22,10 @@ let gameState = {
     lastRoll: null,      // Store the last rolled value
     dieFaces: 6,
     extraTurn: false,
+    boardRadius: 2,
+    boardSizeFactor: 4,
 };
-gameState.numberOfPlayers = 4;
+// boardRadius * 1.5
 gameState.maxT = gameState.numberOfPlayers * (sideLength * 2 + 1);
 gameState.pivotIndex = Array.from({ length: gameState.numberOfPlayers }, (_, i) => (i * (sideLength * 2 + 1)));
 gameState.safeIndex = [

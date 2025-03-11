@@ -102,7 +102,8 @@ function initGame() {
     gameState.lastRoll = null;
     
     updateGameInfo(`${players[gameState.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
-
+    updateGameInfo(`${testDice()}`);
+    
     // Check if the current player is an autoMover - this is for the first turn
     if (gameState.autoMover[gameState.currentPlayerIndex]) {
         handleDiceClick();
@@ -133,7 +134,7 @@ function nextTurn() {
     gameState.diceRolled && gameState.currentPlayerIndex == gameState.numberOfPlayers - 1 && (autoButton.style.display = 'none');
     
     // Move to next player
-    gameState.dieFaces === gameState.lastRoll || gameState.extraTurn || (gameState.currentPlayerIndex++);
+    (gameState.dieFaces === gameState.lastRoll) || gameState.extraTurn || (playSound('turn'), gameState.currentPlayerIndex++);
     gameState.currentPlayerIndex = gameState.currentPlayerIndex % players.length;
     gameState.diceRolled = false; // Reset dice rolled state
     gameState.lastRoll = null;    // Clear last roll
@@ -147,7 +148,7 @@ function nextTurn() {
     // Update dice appearance for new player
     updateDiceLocation(true);
     updateGameInfo(`${players[gameState.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
-    
+
     // Check if the current player is an autoMover
     if (gameState.autoMover[gameState.currentPlayerIndex]) {
         handleDiceClick();
@@ -156,9 +157,6 @@ function nextTurn() {
 
 
 window.onload = function() {
-    // Set initial base unit
-    baseUnit = 3;
-    
     // Initialize the game
     initGame();
     
