@@ -35,7 +35,6 @@ function getPlayerColor(k, s=100, l=50, playerCount=1) {
 function getRandomPawn(ty = 0) {
     const pawns = ['💩 👻 🐒 🦍 🦧 🐕 🦮 🐕‍🦺 🐩 🐈 🐈‍⬛ 🐅 🐆 🐎 🦓 🦌 🦬 🐂 🐃 🐄 🐖 🐏 🐑 🐐 🐪 🐫 🦙 🦒 🦘 🦥 🦦 🦨 🦘 🦡 🦃 🐔 🐓 🐣 🐤 🐥 🐦 🐧 🐦 🦉 🦅 🦆 🦢 🦜 🦩 🕊️ 🐊 🐢 🦎 🐍 🐲 🐉 🦕 🦖 🐳 🐋 🐬 🦭 🐟 🐠 🐡 🦈 🐙 🐚 🦀 🦞 🦐 🦑 🦪 🐌 🦋 🐛 🐜 🐝 🐞 🦗 🕷️ 🕸️ 🦂 🦟 🪰 🪲'.split(' '),
         '😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😛 😝 😜 🤪 🤨 🧐 🤓 😎 🥸 🤩 🥳 😏 😒 😞 😔 😟 😕 🙁 ☹️ 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 🤯 😳 🥵 🥶 😱 😨 😰 😥 😓 🤗 🤔 🤭 🤫 🤥 😶 😐 😑 😬 🙄 😯 😦 😧 😮 😲 🥱 😴 🤤 😪 😵 🤐 🥴 🤢 🤮 🤧 😷 🤒 🤕 🤑 🤠'.split(' ')];
-    // 😈
     return pawns[ty][Math.floor(Math.random() * pawns[ty].length)]
 }
 

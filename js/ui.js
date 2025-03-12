@@ -187,8 +187,7 @@ function isPointInDot(x, y, dot, playerCanvas) {
 function resetGame() {
     // Reset game state
     // calc board size based on number of players
-    // max should be 2.1*1.5 !!
-    gameState.boardRadius = 2;
+    gameState.boardRadius = (gameState.numberOfPlayers % 2 == 0 ? 2.1 : 1.94) - 0.5*(gameState.numberOfPlayers<3);
     gameState.boardSizeFactor = gameState.boardRadius * 2;
     // reset other stuff
     const playerArea = sideLength * 2 + 1
@@ -197,23 +196,22 @@ function resetGame() {
     gameState.safeIndex = [
         ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * playerArea) + 2) % gameState.maxT),
         ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * playerArea) - 3 + gameState.maxT) % gameState.maxT)
-    ].sort((a, b) => a - b);
+        ].sort((a, b) => a - b);
     gameState.autoMover = Array.from({ length: gameState.numberOfPlayers }, () => false);
+    gameState.playerType = Array.from({ length: gameState.numberOfPlayers }, (j) => gameState.autoMover[j] ? "Nice" : "Human");
     gameState.currentPlayerIndex = 0;
     gameState.animating = false;
+    gameState.gameStarted = false;
+    gameState.gameEnded = false;
 
-
-    
     // Recreate players array with new count
-    usedPawns = new Set();
     players = Array.from({ length: gameState.numberOfPlayers }, (_, k) => {
-        let pawn;
-        do {
-            pawn = getRandomPawn();
-        } while (usedPawns.has(pawn));
-        usedPawns.add(pawn);
-        return { color: getPlayerColor(k / gameState.numberOfPlayers), name: pawn };
+        return { color: getPlayerColor(k / gameState.numberOfPlayers), name: getRandomPawn()};
     });
+    for (let i = 0; i < players.length; i++) {
+        if (players.every((p,j) => j==i || players[i].name != p.name)) {continue;}
+        getPlayerNewPawn(i);
+    }
     
     // Update canvas references
     while (container.children.length > 1) {
@@ -250,31 +248,7 @@ function resetGame() {
     createPlayerControls();
     
     // Recalculate path points
-    segmentPoints = Array.from({ length: (sideLength-1)*resParameter+1 }, (_, i) => path(i/resParameter));
-    
-    // Recalculate segment distances
-    segmentDiffs = [];
-    for (let i = 0; i < segmentPoints.length - 1; i++) {
-        const dx = segmentPoints[i + 1].x - segmentPoints[i].x;
-        const dy = segmentPoints[i + 1].y - segmentPoints[i].y;
-        segmentDiffs.push(Math.sqrt(dx * dx + dy * dy));
-    }
-    
-    // Recalculate cumulative distances and path points
-    cumulativeDistances = cumsum(segmentDiffs);
-    pathIndex = [];
-    for (let i = 0; i <= sideLength; i++) {
-        let targetDistance = i * cumulativeDistances[cumulativeDistances.length - 1] / sideLength;
-        let index = cumulativeDistances.findIndex(distance => distance >= targetDistance);
-        pathIndex.push(index/resParameter);
-    }
-    
-    pathIndex = pathIndex.concat(pathIndex.slice().reverse().map(x => (2*sideLength+1) - x));
-    pathIndex.pop();
-    pathPoints = [];
-    for (let j = 0; j < gameState.numberOfPlayers; j++) {
-        pathPoints = pathPoints.concat(pathIndex.map(index => path(index + j*(2*sideLength+1))));
-    }
+    calcPathPoints();
     
     // Redraw everything
     drawCurves();
@@ -288,6 +262,10 @@ function resetGame() {
     
     // Create new dice
     createDiceElement();
+
+    // Re-add score board
+    container.appendChild(scoreBoard);
+    updateScoreBoard();
     
     // Reset dice state
     gameState.diceRolled = false;
@@ -315,6 +293,7 @@ function createAutoButton() {
     autoButton.style.display = 'block';
     autoButton.addEventListener('click', () => {
         gameState.autoMover[gameState.currentPlayerIndex] = true;
+        gameState.playerType[gameState.currentPlayerIndex] = "Nice";
         console.log(`Player ${gameState.currentPlayerIndex} is now an auto mover`);
         handleDiceClick();
     });

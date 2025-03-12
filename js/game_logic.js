@@ -5,10 +5,10 @@
 // Win condition checking
 
 // TODO now
-// preper to quantize the game - add `state` and `pattern` to playerCanvas, add `measurement` and `project` functions, redestribute pattern in starting area if possible, finally add `selfInteraction` function (game start classical, then quantum effects comes in via `selfInteraction`, like in a HOM experiment)
+// preper to quantize the game - add `state` and `pattern` to playerCanvas, add `measurement` and `project` functions, redestribute pattern in starting area if possible, finally add `selfInteraction` function (game start classical, then quantum effects comes in via `selfInteraction`, like in a HOM experiment)\
 
 // TODO later
-// larger board, by at least factor of 1.1 !! - change `boardSizeFactor` and `boardRadius` (in config.js) dynamically ? 
+// larger board - change `boardSizeFactor` and `boardRadius` (in config.js) dynamically ? 
 // fix dice location, e.g., see 5 players
 // background color ~ in `styles.css` in `body`
 // always widescreen - no screen rotation
@@ -99,23 +99,29 @@ function moveDotAlongMainPath(currentPlayerCanvas, i, moveAmount) {
 // checkForCollision, and go to `checkWinCondition`
 function checkForCollision(currentPlayerCanvas, i) {
     const dot = currentPlayerCanvas.dots[i];
-    // safeIndex, that stars
+    // safeIndex - stars
     if (gameState.safeIndex.includes(dot.index) || dot.inHomePath || dot.inStartingArea) {
         checkWinCondition(currentPlayerCanvas);
         return false;
     }
     // Check if the dot landed on another dot
-    const otherPlayerCanvases = playerCanvases.filter(pc => pc !== currentPlayerCanvas);
     let collision = false;
-    for (const otherCanvas of otherPlayerCanvases) {
+    for (k = 0; k < playerCanvases.length; k++) { // loop over other players
+        if (k == gameState.currentPlayerIndex) {
+            continue; // skip current player
+        }
+        const otherCanvas = playerCanvases[k];
         const otherDots = otherCanvas.dots;
-        for (j = 0; j < otherDots.length; j++) {
+        for (j = 0; j < otherDots.length; j++) { // loop over other dots
             if (otherDots[j].reachedHome || otherDots[j].inHomePath || otherDots[j].inStartingArea) {
-                continue;
+                continue; // safe zones - safeIndex already checked by current player
             }
             if (dot.index === otherDots[j].index) {
                 // Send the other dot back to starting area
                 sendDotToStartingArea(otherCanvas, j, (collision ? ()=>{} : ()=>{checkWinCondition(currentPlayerCanvas);}));
+                if (gameState.autoMover[k]) {
+                    gameState.playerType[k] = "Angry"; // make autoMover angry
+                }
                 collision = true;
                 gameState.extraTurn = true;
             }
@@ -132,11 +138,13 @@ function checkForCollision(currentPlayerCanvas, i) {
 
 // check if al dots are in home, else, and go to `nextTurn`
 function checkWinCondition(playerCanvas) {
+    updateScoreBoard();
     const allHome = playerCanvas.dots.every(dot => dot.reachedHome);
     if (allHome) {
         const playerName = playerCanvas.player.name;
         updateGameInfo(`🎉 ${playerName} has won the game! 🎉`);
         playSound('win');
+        gameState.gameEnded = true;
         // You can add additional victory celebration here
         return true;
     } else {
@@ -145,10 +153,10 @@ function checkWinCondition(playerCanvas) {
     return false;
 }
 
-function getMoveableDots(currentPlayerCanvas, moveAmount) {
+function checkWhoCanMove(currentPlayerCanvas, moveAmount) { // list of true/false if dot can move
     const dots = currentPlayerCanvas.dots;
     // Filter dots that can move
-    const movableDots = dots.filter(dot => {
+    const canMove = dots.map(dot => {
         if (dot.inStartingArea && moveAmount === gameState.dieFaces) {
             return true;
         } else if (!dot.inStartingArea && !dot.inHomePath) {
@@ -167,37 +175,94 @@ function getMoveableDots(currentPlayerCanvas, moveAmount) {
         }
         return false;
     });
-    return movableDots;
+    return canMove;
+}
+
+function getMoveableDots(currentPlayerCanvas, moveAmount) {
+    const canMove = checkWhoCanMove(currentPlayerCanvas, moveAmount)
+    return currentPlayerCanvas.dots.filter((_, i) => canMove[i]);
 }
 
 // Auto move function
 function autoMove() {
     const moveAmount = gameState.lastRoll;
     const currentPlayerCanvas = playerCanvases[gameState.currentPlayerIndex];
-    const dots = currentPlayerCanvas.dots;
-    const movableDots = getMoveableDots(currentPlayerCanvas, moveAmount)
-    const allAutoMovers = gameState.autoMover.every(autoMover => autoMover);
-
-    if (movableDots.length > 0) {
-        movableDotsInStartingArea = movableDots.filter(dot => dot.inStartingArea);
-        movableDotsInHomePath = movableDots.filter(dot => dot.inHomePath);
-        // Randomly select a dot to move
-        if (movableDotsInStartingArea.length > 0) {
-            const dotIndex = dots.indexOf(movableDotsInStartingArea[Math.floor(Math.random() * movableDotsInStartingArea.length)]);
-            moveDotOutOfStartingArea(currentPlayerCanvas, dotIndex, moveAmount);
-        } else if (movableDotsInHomePath.length > 0) {
-            const dotIndex = dots.indexOf(movableDotsInHomePath[Math.floor(Math.random() * movableDotsInHomePath.length)]);
-            moveDotAlongHomePath(currentPlayerCanvas, dotIndex, moveAmount);
-        } else {
-            const dotIndex = dots.indexOf(movableDots[Math.floor(Math.random() * movableDots.length)]);
-            moveDotAlongMainPath(currentPlayerCanvas, dotIndex, moveAmount);
-        }
-
-    } else {
+    const dots = currentPlayerCanvas.dots;    
+    const canMove = checkWhoCanMove(currentPlayerCanvas, moveAmount)
+    // const movableDots = getMoveableDots(currentPlayerCanvas, moveAmount)
+    // cannot move
+    if (canMove.every(dot => !dot)) {
+        const allAutoMovers = gameState.autoMover;
         updateGameInfo(`${players[gameState.currentPlayerIndex].name} cannot move! Next player's turn.`);
         setTimeout(() => {
             nextTurn();
         }, 1000 * (allAutoMovers ? fastSpeedFactor : 1));
+        return;
+    }
+    // get all other dots not in safe zones
+    const allOtherDots = playerCanvases.filter(pc => pc !== currentPlayerCanvas).map(pc => pc.dots).flat().filter(dot => !dot.inHomePath && !dot.inStartingArea);
+    const allOtherDotsIndex = allOtherDots.map(dot => dot.index).filter(idx => !gameState.safeIndex.includes(idx));
+
+    // prioritize moves
+    const dotsInSafeZone = dots.map(dot => dot.inHomePath || gameState.safeIndex.includes(dot.index));
+    const dotsGettingToSafeZone = dots.map(dot => dot.inHomePath || gameState.safeIndex.includes((dot.index + moveAmount + pathPoints.length) % pathPoints.length));
+    const dotsInStartingArea = dots.map(dot => dot.inStartingArea);
+    const dotsGettingHome = dots.map(dot => dot.inHomePath && dot.stepsToHome == moveAmount);
+    const dotsColliding = dots.map(dot => allOtherDotsIndex.includes((dot.index + moveAmount + pathPoints.length) % pathPoints.length));
+    
+    const playerType = gameState.playerType[gameState.currentPlayerIndex];
+    moveScore = Array.from({ length: dots.length }, () => 0);
+    if ("Nice" == playerType) {
+        for (let i = 0; i < dots.length; i++) {
+            if (canMove[i]              ) {moveScore[i] += 100;} // can move
+            if (dotsInSafeZone[i]       ) {moveScore[i] -= 0;} // don't move if already in safe zone
+            if (dotsGettingToSafeZone[i]) {moveScore[i] += 0;} // move to safe zone
+            if (dotsGettingHome[i]      ) {moveScore[i] += 2;} // move home
+            if (dotsInStartingArea[i]   ) {moveScore[i] += 4;} // move out of starting area
+            if (dotsColliding[i]        ) {moveScore[i] -= 8} //
+            moveScore[i] += Math.random() * 0.01; // add some randomness
+        }
+    } else if ("Angry" == playerType) {
+        for (let i = 0; i < dots.length; i++) {
+            if (canMove[i]              ) {moveScore[i] += 100;} // can move
+            if (dotsInSafeZone[i]       ) {moveScore[i] -= 1;} // don't move if already in safe zone
+            if (dotsGettingToSafeZone[i]) {moveScore[i] += 1;} // move to safe zone
+            if (dotsGettingHome[i]      ) {moveScore[i] += 2;} // move home
+            if (dotsInStartingArea[i]   ) {moveScore[i] += 4;} // move out of starting area
+            if (dotsColliding[i]        ) {moveScore[i] += 8} //
+            moveScore[i] += Math.random() * 0.01; // add some randomness
+        }
+    } else if ("Human" == playerType) { // random
+        for (let i = 0; i < dots.length; i++) {
+            if (canMove[i]              ) {moveScore[i] += 100;} // can move
+            moveScore[i] += Math.random() * 0.01; // add some randomness
+        }
+    } else {ErrorEvent("Unknown player type!")}
+    
+    const dotIndex = moveScore.indexOf(Math.max(...moveScore));
+    console.assert(canMove[dotIndex], `Dot at index ${dotIndex} cannot move!`);
+
+    // move choosen dot
+    const dotToMove = dots[dotIndex];
+    if (dotToMove.inStartingArea) {
+        moveDotOutOfStartingArea(currentPlayerCanvas, dotIndex, moveAmount);
+    } else if (dotToMove.inHomePath) {
+        moveDotAlongHomePath(currentPlayerCanvas, dotIndex, moveAmount);
+    } else {
+        moveDotAlongMainPath(currentPlayerCanvas, dotIndex, moveAmount);
+    }
+
+}
+
+
+function moveDot(currentPlayerCanvas, dotIndex, moveAmount) {
+    const dotToMove = currentPlayerCanvas.dots[dotIndex];
+    if (dotToMove.inStartingArea) {
+        moveDotOutOfStartingArea(currentPlayerCanvas, dotIndex, moveAmount);
+    } else if (dotToMove.inHomePath) {
+        moveDotAlongHomePath(currentPlayerCanvas, dotIndex, moveAmount);
+    } else {
+        moveDotAlongMainPath(currentPlayerCanvas, dotIndex, moveAmount);
     }
 }
 
@@ -217,4 +282,21 @@ function testDice(N = 2**14) {
     let c1 = rolls.slice(0, -1).map((value, index) => value * rolls[index + 1])
     c1 = c1.reduce((acc, value) => acc + value, 0) / (rolls.length-1)
     return meanOccurences.map(value => Math.round(value * 10000) / 10000) + ";;corr;;" + [c1/c0];
+}
+
+
+function calcScore() {
+    scores = Array.from({ length: gameState.numberOfPlayers }, () => 0);
+    for (let i = 0; i < gameState.numberOfPlayers; i++) {
+        for (let j = 0; j < playerCanvases[i].dots.length; j++) {
+            dot = playerCanvases[i].dots[j];
+            if (dot.inStartingArea) {continue}
+            scores[i] += gameState.dieFaces // move out of starting area
+            dist = dot.index - dot.pathEntryIndex
+            if (dist < 0) {dist += gameState.maxT}
+            scores[i] += dist
+            if (dot.inHomePath) {scores[i] += dot.homePathStep}
+        }
+    }
+    return scores;
 }

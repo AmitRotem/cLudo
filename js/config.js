@@ -22,24 +22,19 @@ let gameState = {
     lastRoll: null,      // Store the last rolled value
     dieFaces: 6,
     extraTurn: false,
-    boardRadius: 2,
-    boardSizeFactor: 4,
+    gameStarted: false,
+    gameEnded: false,
 };
-// boardRadius * 1.5
-gameState.maxT = gameState.numberOfPlayers * (sideLength * 2 + 1);
-gameState.pivotIndex = Array.from({ length: gameState.numberOfPlayers }, (_, i) => (i * (sideLength * 2 + 1)));
-gameState.safeIndex = [
-    ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * (sideLength * 2 + 1)) + 2) % gameState.maxT),
-    ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * (sideLength * 2 + 1)) - 3 + gameState.maxT) % gameState.maxT)
-].sort((a, b) => a - b);
-gameState.autoMover = Array.from({ length: gameState.numberOfPlayers }, () => false);
 
-let usedPawns = new Set();
+// init player data
 let players = Array.from({ length: gameState.numberOfPlayers }, (_, k) => {
-    let pawn;
-    do {
-        pawn = getRandomPawn();
-    } while (usedPawns.has(pawn));
-    usedPawns.add(pawn);
-    return { color: getPlayerColor(k / gameState.numberOfPlayers), name: pawn };
+    return { color: getPlayerColor(k / gameState.numberOfPlayers), name: getRandomPawn()};
 });
+
+
+function getPlayerNewPawn(i) {
+    do {
+        players[i].name = getRandomPawn();
+    } while (players.slice(0, i).some(p => players[i].name === p.name));
+}
+

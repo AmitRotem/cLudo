@@ -22,6 +22,7 @@ function playSound(sound) {
 
 // Animate dice roll when clicked
 function handleDiceClick() {
+    gameState.gameStarted = true;
     // Prevent multiple rolls in one turn
     if (gameState.diceRolled || gameState.animating) return;
     fadeOut(gameState.playerControls.container);
@@ -71,7 +72,7 @@ function handleDiceClick() {
             // Get moveable dots for current player
             moveableDots = getMoveableDots(currentPlayerCanvas, rollResult)
             autoMoveDot = (2 > moveableDots.length)
-                || moveableDots.every(dot => dot.index === moveableDots[0].index)
+                || moveableDots.every(dot => dot.index === moveableDots[0].index) // auto move if all possible moves are the same
                 || isAutoMover
             
             // Reset dice appearance after showing result
@@ -138,6 +139,7 @@ function moveMultipleSteps(playerCanvas, dotIndex, steps, direction, onComplete)
 // Move dot along home path
 function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
     // console.log("moveAlongHomePath");
+    const allAutoMovers = gameState.autoMover.every(autoMover => autoMover);
     const dot = playerCanvas.dots[dotIndex];
     dot.moving = true;
     gameState.animating = true;
@@ -166,7 +168,7 @@ function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
     
     // Animate the movement
     const startPosition = dot.homePathPosition;
-    const duration = 400 * steps; // Fixed duration for a single step
+    const duration = (allAutoMovers ? fastSpeedFactor : 1)*200 * steps; // Fixed duration for a single step
     const startTime = performance.now();
     
     updateGameInfo(`${playerCanvas.player.name}'s dot is moving along home path...`);
@@ -176,12 +178,12 @@ function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
         const progress = Math.min(elapsed / duration, 1);
         
         // Easing function for smoother movement
-        const easedProgress = 1 - Math.pow(1 - progress, 3); // Cubic ease out
+        // const easedProgress = 1 - Math.pow(1 - progress, 3); // Cubic ease out
         
         // Simple linear interpolation between points
         dot.homePathPosition = {
-            x: startPosition.x + (newPosition.x - startPosition.x) * (easedProgress - Math.sin(easedProgress*steps*2*Math.PI)/(steps*2*Math.PI)),
-            y: startPosition.y + (newPosition.y - startPosition.y) * (easedProgress - Math.sin(easedProgress*steps*2*Math.PI)/(steps*2*Math.PI))
+            x: startPosition.x + (newPosition.x - startPosition.x) * (progress - Math.sin(progress*steps*2*Math.PI)/(steps*2*Math.PI)),
+            y: startPosition.y + (newPosition.y - startPosition.y) * (progress - Math.sin(progress*steps*2*Math.PI)/(steps*2*Math.PI))
         };
         
         drawPlayerDots(playerCanvas);

@@ -55,7 +55,44 @@ gameTitle.addEventListener('click', () => {
     updateDimensions();
     updateVisualElements();
     playerCanvases.forEach(pc => drawPlayerDots(pc));
+    if (gameState.gameEnded) {resetGame();}
 });
+
+// Create scoreboard below the title
+const scoreBoard = document.createElement('div');
+scoreBoard.id = 'score-board';
+scoreBoard.style.position = 'absolute';
+scoreBoard.style.top = '50px';
+scoreBoard.style.left = '0';
+scoreBoard.style.width = 'auto';
+scoreBoard.style.textAlign = 'left';
+scoreBoard.style.fontSize = '24px';
+scoreBoard.style.fontWeight = 'bold';
+scoreBoard.style.color = '#333';
+scoreBoard.style.textShadow = '2px 2px 4px rgba(255, 255, 255, 0.7)';
+scoreBoard.style.pointerEvents = 'none'; // Prevent clicks
+scoreBoard.style.zIndex = '100'; // Ensure it's on top
+container.appendChild(scoreBoard);
+
+// Function to update the scoreboard
+function updateScoreBoard() {
+    // 😈 😇
+    const scores = calcScore();
+    let scoreText = '<br><br>Scores:<br>';
+    players.forEach((player, index) => {
+        scoreText += `${player.name}: ${scores[index]}`;
+        if (gameState.autoMover[index]) {
+            sufix = "  "
+            if ("Nice" == gameState.playerType[index]) {sufix+='😇'};
+            if ("Angry" == gameState.playerType[index]) {sufix+='😈'};
+            // if ("Human" == gameState.playerType[index]) {sufix+='🙂'};
+            scoreText += sufix
+        }
+        scoreText += `<br>`;
+    });
+    scoreBoard.innerHTML = scoreText;
+}
+
 
 // Create UI elements
 const gameInfo = document.createElement('div');
@@ -68,32 +105,36 @@ const gameInfo = document.createElement('div');
 // gameInfo.style.fontWeight = 'bold';
 container.appendChild(gameInfo);
 
-// sample path points
-let segmentPoints = Array.from({ length: (sideLength-1)*resParameter+1 }, (_, i) => path(i/resParameter));
-// calculate segment distances
-let segmentDiffs = [];
-for (let i = 0; i < segmentPoints.length - 1; i++) {
-    const dx = segmentPoints[i + 1].x - segmentPoints[i].x;
-    const dy = segmentPoints[i + 1].y - segmentPoints[i].y;
-    // squared distance
-    segmentDiffs.push(Math.sqrt(dx * dx + dy * dy));
+function calcPathPoints() {
+    segmentPoints = Array.from({ length: (sideLength-1)*resParameter+1 }, (_, i) => path(i/resParameter));
+    
+    // Recalculate segment distances
+    segmentDiffs = [];
+    for (let i = 0; i < segmentPoints.length - 1; i++) {
+        const dx = segmentPoints[i + 1].x - segmentPoints[i].x;
+        const dy = segmentPoints[i + 1].y - segmentPoints[i].y;
+        segmentDiffs.push(Math.sqrt(dx * dx + dy * dy));
+    }
+    
+    // Recalculate cumulative distances and path points
+    cumulativeDistances = cumsum(segmentDiffs);
+    pathIndex = [];
+    for (let i = 0; i <= sideLength; i++) {
+        let targetDistance = i * cumulativeDistances[cumulativeDistances.length - 1] / sideLength;
+        let index = cumulativeDistances.findIndex(distance => distance >= targetDistance);
+        pathIndex.push(index/resParameter);
+    }
+    
+    pathIndex = pathIndex.concat(pathIndex.slice().reverse().map(x => (2*sideLength+1) - x));
+    pathIndex.pop();
+    pathPoints = [];
+    for (let j = 0; j < gameState.numberOfPlayers; j++) {
+        pathPoints = pathPoints.concat(pathIndex.map(index => path(index + j*(2*sideLength+1))));
+    }
+    return pathPoints;
 }
-// calculate cumulative distances
-
-let cumulativeDistances = cumsum(segmentDiffs);
-let pathIndex = [];
-for (let i = 0; i <= sideLength; i++) {
-    let targetDistance = i * cumulativeDistances[cumulativeDistances.length - 1] / sideLength;
-    let index = cumulativeDistances.findIndex(distance => distance >= targetDistance);
-    pathIndex.push(index/resParameter);
-}
-
-pathIndex = pathIndex.concat(pathIndex.slice().reverse().map(x => (2*sideLength+1) - x));
-pathIndex.pop();
-let pathPoints = [];
-for (let j = 0; j < gameState.numberOfPlayers; j++) {
-    pathPoints = pathPoints.concat(pathIndex.map(index => path(index + j*(2*sideLength+1))));
-}
+let pathPoints;
+calcPathPoints();
 
 // Convert path coordinates to canvas coordinates
 function pathToCanvasX(x) {return +x * (bgCanvas.width  / 8) + bgCanvas.width  / 2}
@@ -357,7 +398,7 @@ function updateDimensions() {
         diceElement.style.fontSize = `${baseUnit * 5.2}px`;
         diceElement.style.borderRadius = `${baseUnit * 0.8}px`;
     }
-    updateDiceLocation(true);
+    updateDiceLocation(false);
 }
 
 // Update dot radius, stroke width, and other visual elements
