@@ -9,7 +9,6 @@
 
 // TODO later
 // larger board - change `boardSizeFactor` and `boardRadius` (in config.js) dynamically ? 
-// fix dice location, e.g., see 5 players
 // background color ~ in `styles.css` in `body`
 // always widescreen - no screen rotation
 
