@@ -7,8 +7,8 @@
 // Create background canvas for static curves
 const bgCanvas = document.createElement('canvas');
 const bgCtx = bgCanvas.getContext('2d');
-bgCanvas.width = 3200;
-bgCanvas.height = 2400;
+// bgCanvas.width = 3200;
+// bgCanvas.height = 2400;
 bgCanvas.style.border = 'none'; // Remove the border
 bgCanvas.style.margin = '0';    // Remove margin
 bgCanvas.style.display = 'block';
@@ -17,8 +17,8 @@ bgCanvas.style.position = 'absolute';
 // Create a container div to hold all canvases
 const container = document.createElement('div');
 container.style.position = 'relative';
-container.style.width = '3200px';
-container.style.height = '2400px';
+// container.style.width = '3200px';
+// container.style.height = '2400px';
 container.style.margin = '0px auto';
 document.body.appendChild(container);
 
@@ -463,8 +463,8 @@ function updateVisualElements() {
 // Create canvas for each player
 const playerCanvases = players.map(player => {
     const canvas = document.createElement('canvas');
-    canvas.width = 3200;
-    canvas.height = 2400;
+    // canvas.width = 3200;
+    // canvas.height = 2400;
     canvas.style.position = 'absolute';
     canvas.style.pointerEvents = 'none'; // Make transparent to mouse events at first
     container.appendChild(canvas);
