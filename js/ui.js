@@ -18,7 +18,7 @@ function createPlayerControls() {
     playerCountDisplay.style.fontWeight = 'bold';
     playerCountDisplay.style.marginRight = `${baseUnit * 0.8}px`;
     playerCountDisplay.style.color = '#333';
-    playerCountDisplay.textContent = gameState.numberOfPlayers.toString();
+    playerCountDisplay.textContent = currentBoard.numPlayers.toString();
     controlsContainer.appendChild(playerCountDisplay);
 
     const buttonContainer = document.createElement('div');
@@ -52,22 +52,24 @@ function createPlayerControls() {
     buttonContainer.appendChild(downButton);
 
     upButton.addEventListener('click', () => {
-        if (gameState.numberOfPlayers < 10) {
-            gameState.numberOfPlayers++;
+        console.debug('up button clicked');
+        if (currentBoard.numPlayers < 10) {
+            currentBoard.numPlayers++;
         }
-        playerCountDisplay.textContent = gameState.numberOfPlayers.toString();
+        playerCountDisplay.textContent = currentBoard.numPlayers.toString();
         resetGame();
     });
 
     downButton.addEventListener('click', () => {
-        if (gameState.numberOfPlayers > 1) {
-            gameState.numberOfPlayers--;
+        console.debug('down button clicked');
+        if (currentBoard.numPlayers > 1) {
+            currentBoard.numPlayers--;
         }
-        playerCountDisplay.textContent = gameState.numberOfPlayers.toString();
+        playerCountDisplay.textContent = currentBoard.numPlayers.toString();
         resetGame();
     });
 
-    gameState.playerControls = {
+    playerControls = {
         container: controlsContainer,
         display: playerCountDisplay,
         upButton: upButton,
@@ -77,6 +79,7 @@ function createPlayerControls() {
     // Add autoMover button
     createAutoButton();
 }
+let playerControls;
 
 function createDiceElement() {
     const diceContainer = document.createElement('div');
@@ -117,12 +120,13 @@ function createDiceElement() {
 
 function updateGameInfo(message) {
     gameInfo.textContent = message;
-    gameInfo.style.color = players[gameState.currentPlayerIndex].color;
+    gameInfo.style.color = currentBoard.players[currentBoard.currentPlayerIndex].color;
 }
 
-function drawPlayerDots(playerCanvas, shiftXlist=0, shiftYlist=0) {
-    playerCanvas.ctx.clearRect(0, 0, playerCanvas.canvas.width, playerCanvas.canvas.height);
-    const emoji = playerCanvas.player.name;
+function drawPlayerDots(player, shiftXlist=0, shiftYlist=0) {
+    const playerCanvas = player.display;
+    playerCanvas.ctx.clearRect(0, 0, player.display.canvas.width, player.display.canvas.height);
+    const emoji = player.name;
 
     playerCanvas.dots.forEach((dot, index) => {
         const shiftX = Array.isArray(shiftXlist) ? shiftXlist[index] : shiftXlist;
@@ -146,8 +150,8 @@ function drawPlayerDots(playerCanvas, shiftXlist=0, shiftYlist=0) {
         playerCanvas.ctx.arc(canvasPoint.x+shiftX, canvasPoint.y+shiftY, dot.radius, 0, Math.PI * 2);
         // playerCanvas.ctx.strokeStyle = '#888888';
         // playerCanvas.ctx.stroke();
-        playerCanvas.player.color.split("(")[0] === "hsl" || error("Color should be in hsl format");
-        playerCanvas.ctx.fillStyle = `hsla(${playerCanvas.player.color.split("(")[1].split(")")[0]}, 0.3)`; // dot background color
+        player.color.split("(")[0] === "hsl" || error("Color should be in hsl format");
+        playerCanvas.ctx.fillStyle = `hsla(${player.color.split("(")[1].split(")")[0]}, 0.3)`; // dot background color
         playerCanvas.ctx.fill();
         playerCanvas.ctx.font = `${2.5 * baseUnit}px Arial`; // change emoji size
         playerCanvas.ctx.textAlign = 'center';
@@ -185,29 +189,7 @@ function isPointInDot(x, y, dot, playerCanvas) {
 
 // Function to reset the game when player count changes
 function resetGame() {
-    // Reset game state
-    // calc board size based on number of players
-    gameState.boardRadius = (gameState.numberOfPlayers % 2 == 0 ? 2.1 : 1.94) - 0.5*(gameState.numberOfPlayers<3);
-    gameState.boardSizeFactor = gameState.boardRadius * 2;
-    // reset other stuff
-    const playerArea = sideLength * 2 + 1
-    gameState.maxT = gameState.numberOfPlayers * playerArea;
-    gameState.pivotIndex = Array.from({ length: gameState.numberOfPlayers }, (_, i) => (i * playerArea));
-    gameState.safeIndex = [
-        ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * playerArea) + 2) % gameState.maxT),
-        ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * playerArea) - 3 + gameState.maxT) % gameState.maxT)
-        ].sort((a, b) => a - b);
-    gameState.autoMover = Array.from({ length: gameState.numberOfPlayers }, () => false);
-    gameState.playerType = Array.from({ length: gameState.numberOfPlayers }, (j) => gameState.autoMover[j] ? "Naive" : "Human");
-    gameState.currentPlayerIndex = 0;
-    gameState.animating = false;
-    gameState.gameStarted = false;
-    gameState.gameEnded = false;
-
-    // Recreate players array with new count
-    players = Array.from({ length: gameState.numberOfPlayers }, (_, k) => {
-        return { color: getPlayerColor(k / gameState.numberOfPlayers), name: getRandomPawn()};
-    });
+    currentBoard = createBoard(currentBoard.numPlayers);
     
     // Update canvas references
     while (container.children.length > 1) {
@@ -221,25 +203,20 @@ function resetGame() {
     container.appendChild(gameTitle);
     
     // Create new player canvases
-    playerCanvases.length = 0;
-    players.forEach(player => {
+    currentBoard.players.forEach(player => {
         const canvas = document.createElement('canvas');
         canvas.width = bgCanvas.width;
         canvas.height = bgCanvas.height;
         canvas.style.position = 'absolute';
         canvas.style.pointerEvents = 'none';
         container.appendChild(canvas);
-        playerCanvases.push({
-            player: player,
+        player.display = {
             canvas: canvas,
             ctx: canvas.getContext('2d'),
             dots: []
-        });
+        };
     });
 
-    // make sure all players have distinct pawns
-    for (let i = 0; i < players.length; i++) {getPlayerDistinctPawn(playerCanvases, i)};
-    
     // Re-add game info
     container.appendChild(gameInfo);
     
@@ -267,11 +244,12 @@ function resetGame() {
     updateScoreBoard();
     
     // Reset dice state
-    gameState.diceRolled = false;
-    gameState.lastRoll = null;
+    currentBoard.diceRolled = false;
+    currentBoard.players[currentBoard.currentPlayerIndex].die = null;
+    currentBoard.gameStarted = false;
     
     // Reset game info
-    updateGameInfo(`${players[gameState.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
+    updateGameInfo(`${currentBoard.players[currentBoard.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
 }
 
 function createAutoButton() {
@@ -291,9 +269,10 @@ function createAutoButton() {
     autoButton.style.zIndex = '100';
     autoButton.style.display = 'block';
     autoButton.addEventListener('click', () => {
-        gameState.autoMover[gameState.currentPlayerIndex] = true;
-        gameState.playerType[gameState.currentPlayerIndex] = "Naive";
-        console.log(`Player ${gameState.currentPlayerIndex} is now an auto mover`);
+        console.debug('Auto button clicked');
+        currentBoard.players[currentBoard.currentPlayerIndex].autoMove = true;
+        currentBoard.players[currentBoard.currentPlayerIndex].style = "Naive";
+        console.log(`Player ${currentBoard.currentPlayerIndex} is now an auto mover`);
         handleDiceClick();
     });
     container.appendChild(autoButton);

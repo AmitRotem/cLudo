@@ -13,12 +13,6 @@ function initGame() {
     updateDimensions();
     updateVisualElements();
     
-    // Clear any previous state
-    playerCanvases.forEach(pc => {
-        pc.dots = [];
-        pc.ctx.clearRect(0, 0, pc.canvas.width, pc.canvas.height);
-    });
-    
     // Draw the curves first
     drawCurves();
     
@@ -36,7 +30,7 @@ function initGame() {
     
     // Set up click handler
     container.onclick = function(e) {
-        if (gameState.gameStarted) {
+        if (currentBoard.gameStarted) {
             handleCanvasClick(e);
         } else {
             handleSetupClick(e);
@@ -44,15 +38,16 @@ function initGame() {
     };
     
     // Make all player canvases non-interactive
-    playerCanvases.forEach(pc => {
-        pc.canvas.style.pointerEvents = 'none';
+    currentBoard.players.forEach(pl => {
+        pl.display.canvas.style.pointerEvents = 'none';
     });
     
     // Reset dice state
-    gameState.diceRolled = false;
-    gameState.lastRoll = null;
+    currentBoard.diceRolled = false;
+    currentBoard.players[currentBoard.currentPlayerIndex].die = null;
+    currentBoard.extraTurn = false;
     
-    updateGameInfo(`${players[gameState.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
+    updateGameInfo(`${currentBoard.players[currentBoard.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
     updateGameInfo(`${testDice()}`);
 }
 
@@ -63,18 +58,19 @@ function handleCanvasClick(e) {
     const y = e.clientY - rect.top;
     
     // Only proceed if not currently animating
-    if (gameState.animating) {
+    if (currentBoard.animating) {
         return;
     }
     
     // Only allow dot selection after dice is rolled
-    if (!gameState.diceRolled) {
-        updateGameInfo(`${players[gameState.currentPlayerIndex].name} must roll the dice first!`);
+    if (!currentBoard.diceRolled) {
+        updateGameInfo(`${currentBoard.players[currentBoard.currentPlayerIndex].name} must roll the dice first!`);
         return;
     }
     
-    const moveAmount = gameState.lastRoll; // Use stored roll result
-    const currentPlayerCanvas = playerCanvases[gameState.currentPlayerIndex];
+    const currentPlayer = currentBoard.players[currentBoard.currentPlayerIndex];
+    const moveAmount = currentPlayer.die; // Use stored roll result
+    const currentPlayerCanvas = currentPlayer.display;
     
     // Check each dot of current player
     for (let i = 0; i < currentPlayerCanvas.dots.length; i++) {
@@ -117,20 +113,21 @@ function handleCanvasClick(e) {
 }
 
 function handleSetupClick(e) {
+    console.debug('handleSetupClick');
     // Calculate position relative to canvas
     const rect = bgCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     // Check if clicked on dots
-    for (let i = 0; i < playerCanvases.length; i++) {
-        const pc = playerCanvases[i];
+    for (let i = 0; i < currentBoard.numPlayers; i++) {
+        const pc = currentBoard.players[i].display;
         for (let j = 0; j < pc.dots.length; j++) {
             const dot = pc.dots[j];
             if (isPointInDot(x, y, dot, pc)) {
                 // Change name
-                getPlayerDistinctPawn(playerCanvases, i, true);
+                getPlayerDistinctPawn(currentBoard.players, i, true);
                 // Redraw the dots
-                drawPlayerDots(pc);
+                drawPlayerDots(currentBoard.players[i]);
                 // Update score board
                 updateScoreBoard();
                 return;
@@ -145,10 +142,9 @@ function updateDiceLocation(resetFace) {
     if (diceElement) {        
         resetFace && (diceElement.textContent = '🎲');
         resetFace && (diceElement.style.fontSize = `${baseUnit * 5.2}px`);
-        diceElement.style.boxShadow = `0 0 10px ${players[gameState.currentPlayerIndex].color}`;
-        const currentPlayerCanvas = playerCanvases[gameState.currentPlayerIndex];
-        const playerIndex = playerCanvases.indexOf(currentPlayerCanvas);
-        const pivotIndex = (playerIndex * (sideLength*2+1));
+        diceElement.style.boxShadow = `0 0 10px ${currentBoard.players[currentBoard.currentPlayerIndex].color}`;
+        const playerIndex = currentBoard.currentPlayerIndex;
+        const pivotIndex = (playerIndex * (currentBoard.layerLength));
         const pivotPoint = pathPoints[pivotIndex];
         // set die position
         const factor = 1.25;
@@ -167,26 +163,27 @@ function updateDiceLocation(resetFace) {
 function nextTurn() {
     // remove auto button if last player
     const autoButton = document.getElementById('auto-container');
-    gameState.diceRolled && gameState.currentPlayerIndex == gameState.numberOfPlayers - 1 && (autoButton.style.display = 'none');
+    currentBoard.diceRolled && currentBoard.currentPlayerIndex == currentBoard.numPlayers - 1 && (autoButton.style.display = 'none');
     
     // Move to next player
-    (gameState.dieFaces === gameState.lastRoll) || gameState.extraTurn || (playSound('turn'), gameState.currentPlayerIndex++);
-    gameState.currentPlayerIndex = gameState.currentPlayerIndex % players.length;
-    gameState.diceRolled = false; // Reset dice rolled state
-    gameState.lastRoll = null;    // Clear last roll
-    gameState.extraTurn = false;  // Reset extra turn state
-    
+    (currentBoard.dieSize === currentBoard.players[currentBoard.currentPlayerIndex].die) || currentBoard.extraTurn || (playSound('turn'), currentBoard.currentPlayerIndex++);
+    currentBoard.currentPlayerIndex = currentBoard.currentPlayerIndex % currentBoard.numPlayers;
+    currentBoard.diceRolled = false; // Reset dice rolled state
+    currentBoard.players[currentBoard.currentPlayerIndex].die = null;    // Clear last roll
+    currentBoard.extraTurn = false;  // Reset extra turn state
+    console.debug('nextTurn', currentBoard.currentPlayerIndex);
+
     // Set z-index for all canvases
-    playerCanvases.forEach((pc, index) => {
-        pc.canvas.style.zIndex = 5 + (index == gameState.currentPlayerIndex);
+    currentBoard.players.forEach((pl, index) => {
+        pl.display.canvas.style.zIndex = 5 + (index == currentBoard.currentPlayerIndex);
     });
 
     // Update dice appearance for new player
     updateDiceLocation(true);
-    updateGameInfo(`${players[gameState.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
+    updateGameInfo(`${currentBoard.players[currentBoard.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
 
     // Check if the current player is an autoMover
-    if (gameState.autoMover[gameState.currentPlayerIndex]) {
+    if (currentBoard.players[currentBoard.currentPlayerIndex].autoMove) {
         handleDiceClick();
     }
 }

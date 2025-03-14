@@ -40,12 +40,12 @@ function getRandomPawn(ty = 0) {
     return pawns[ty][Math.floor(Math.random() * pawns[ty].length)]
 }
 
-function getPlayerDistinctPawn(playerCanvases,i,change=false) {
-    const pl = playerCanvases[i].player
-    const oldPawn = pl.name;
+function getPlayerDistinctPawn(listOfPlayers, i, change=false) {
+    const currentPlayer = listOfPlayers[i];
+    const oldPawn = currentPlayer.name;
     for (k = 0; k < 1000; k++) {
-        if (playerCanvases.some((pc,j) => j!=i && pc.player.name == pl.name) || (change && pl.name == oldPawn)) {
-            pl.name = getRandomPawn();
+        if (listOfPlayers.some((pl,j) => j!=i && pl.name == currentPlayer.name) || (change && currentPlayer.name == oldPawn)) {
+            currentPlayer.name = getRandomPawn();
         } else {
             return;
         }
@@ -89,11 +89,11 @@ function pulse(theta, frequency, phaseOffset) {
 
 function path(t) {
     const amplitude = 0.5;
-    const frequency = gameState.numberOfPlayers;
+    const frequency = currentBoard.numPlayers;
     const phaseOffset = (frequency % 2 == 0 ? -0.5 : -0.75)/frequency * 2 * Math.PI - Math.PI / 2;
-    const theta = (-t/gameState.maxT) * 2 * Math.PI;
+    const theta = (-t/currentBoard.circuitLength) * 2 * Math.PI;
     
-    const radius = gameState.boardRadius;
+    const radius = currentBoard.boardRadius;
     const drt = pulse(theta, frequency, 0);
     const xc = radius * (1 + amplitude * drt) * Math.cos(theta+phaseOffset);
     const yc = radius * (1 + amplitude * drt) * Math.sin(theta+phaseOffset);

@@ -43,7 +43,7 @@ container.appendChild(gameTitle);
 
 // Add click event to toggle full screen mode
 gameTitle.addEventListener('click', () => {
-    console.log('Toggling full screen mode');
+    console.debug('Toggling full screen mode');
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(err => {
             console.warn(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
@@ -54,8 +54,8 @@ gameTitle.addEventListener('click', () => {
     // redraw everything after resizing
     updateDimensions();
     updateVisualElements();
-    playerCanvases.forEach(pc => drawPlayerDots(pc));
-    if (gameState.gameEnded) {resetGame();}
+    currentBoard.players.forEach(player => drawPlayerDots(player));
+    if (currentBoard.gameEnded) {resetGame();}
 });
 
 // Create scoreboard below the title
@@ -78,14 +78,14 @@ container.appendChild(scoreBoard);
 function updateScoreBoard() {
     const scores = calcScore();
     let scoreText = '<br><br>Scores:<br>';
-    players.forEach((player, index) => {
+    currentBoard.players.forEach((player, index) => {
         scoreText += `${player.name}: ${scores[index]}`;
-        if (gameState.autoMover[index]) {
+        if (currentBoard.players[index].autoMove) {
             sufix = "  "
-            if ("Naive" == gameState.playerType[index]) {sufix+='😇'};
-            if ("Angry" == gameState.playerType[index]) {sufix+='😈'};
-            if ("Nice"  == gameState.playerType[index]) {sufix+='😗'};
-            // if ("Human" == gameState.playerType[index]) {sufix+='🙂'};
+            if ("Naive" == currentBoard.players[index].style) {sufix+='😇'};
+            if ("Angry" == currentBoard.players[index].style) {sufix+='😈'};
+            if ("Nice"  == currentBoard.players[index].style) {sufix+='😗'};
+            // if ("Human" == currentBoard.players[index].style) {sufix+='🙂'};
             scoreText += sufix
         }
         scoreText += `<br>`;
@@ -106,8 +106,9 @@ const gameInfo = document.createElement('div');
 container.appendChild(gameInfo);
 
 function calcPathPoints() {
-    // sample path from 0 to sideLength+0.5; that is from pivot (at 0) to mid point to next pivot (at 2*sideLength+1)
-    const factor = (sideLength+0.5)/(sideLength*resParameter);
+    // sample path from 0 to sideLength+0.5; that is from pivot (at 0) to mid point to next pivot (at currentBoard.layerLength)
+    const sideLength = ( currentBoard.layerLength - 1 ) / 2;
+    const factor = 0.5*currentBoard.layerLength/(sideLength*resParameter);
     segmentPoints = Array.from({ length: sideLength*resParameter+1 }, (_, i) => path(i*factor));
 
     // calculate segment distances
@@ -137,7 +138,7 @@ function calcPathPoints() {
     
     // now iterate for each player
     pathPoints = [];
-    for (let j = 0; j < gameState.numberOfPlayers; j++) {
+    for (let j = 0; j < currentBoard.numPlayers; j++) {
         pathPoints = pathPoints.concat(pathIndex.map(index => path(index + j*(2*sideLength+1))));
     }
     return pathPoints;
@@ -156,7 +157,7 @@ function pathToCanvas(pathPoint) {
 }
 
 // Draw the static curves on the background canvas
-function drawCurves(maxT = gameState.maxT) {
+function drawCurves(maxT = currentBoard.circuitLength) {
     // Clear canvas
     bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
     
@@ -164,7 +165,7 @@ function drawCurves(maxT = gameState.maxT) {
     bgCtx.beginPath();
     bgCtx.strokeStyle = 'rgba(255, 102, 0, 0.4)'; // outer path color
     bgCtx.lineWidth = baseUnit * 0.2; // Scale line width with baseUnit
-    const gridRadius = gameState.boardSizeFactor * baseUnit / Math.sqrt(gameState.numberOfPlayers); // Use baseUnit for scaling
+    const gridRadius = currentBoard.boardRadius * 2 * baseUnit / Math.sqrt(currentBoard.numPlayers); // Use baseUnit for scaling
     
     for (let t = 0; t <= 1; t += 0.001) {
         const { x, y } = path(t*maxT);
@@ -222,8 +223,8 @@ function drawCurves(maxT = gameState.maxT) {
     // Draw position indicators for each point in pathPoints
     pathPoints.forEach((point, index) => {
         const canvasPoint = pathToCanvas(point);
-        const playerIndex = Math.floor(index / (sideLength*2+1));
-        const startColor = getPlayerColor(playerIndex / gameState.numberOfPlayers, 100, 50);
+        const playerIndex = Math.floor(index / currentBoard.layerLength);
+        const startColor = getPlayerColor(playerIndex / currentBoard.numPlayers, 100, 50);
         // Draw circle at each step position with scaled radius
         bgCtx.strokeStyle = '#666666'; // outer circle color
         bgCtx.lineWidth = baseUnit * 0.1;
@@ -239,22 +240,22 @@ function drawCurves(maxT = gameState.maxT) {
         bgCtx.fill();
         bgCtx.fillStyle = 'black'; // Reset color for text
         // Style the circle based on position
-        if ((index - 2) % (sideLength*2+1) == 0) {
+        if ((index - 2) % (currentBoard.layerLength) == 0) {
             bgCtx.fillStyle = startColor;
             bgCtx.fill();
             bgCtx.fillStyle = 'black'; // Reset color for text
             bgCtx.fillText(getRandomStar(), canvasPoint.x, canvasPoint.y);
-        } else if ((index + 3) % (sideLength*2+1) == 0) {
+        } else if ((index + 3) % (currentBoard.layerLength) == 0) {
             bgCtx.fillText(getRandomStar(), canvasPoint.x, canvasPoint.y);
         }
 
-        if ((index - 2) % (sideLength*2+1) == 0) {
+        if ((index - 2) % (currentBoard.layerLength) == 0) {
             // Player starting position - add circles outside in a square formation
             const arcRadius = gridRadius * 3;
             // Draw starting area with circles in a square pattern
-            const positions = Array.from({ length: gameState.dotsPerPlayer }, (_,i) => ({
-                x: canvasPoint.x - Math.cos(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) - Math.sin(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI),
-                y: canvasPoint.y - Math.sin(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) + Math.cos(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI)
+            const positions = Array.from({ length: currentBoard.numBosons }, (_,i) => ({
+                x: canvasPoint.x - Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI),
+                y: canvasPoint.y - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) + Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI)
             }));
             
             // Draw the four starting circles
@@ -273,7 +274,7 @@ function drawCurves(maxT = gameState.maxT) {
         }
         
         // pivot location
-        if (index % (sideLength * 2 + 1) == 0) {
+        if (index % (currentBoard.layerLength) == 0) {
             bgCtx.fillStyle = 'black';
             bgCtx.font = `{2 * gridRadius} Arial`;
             bgCtx.textAlign = 'center';
@@ -281,31 +282,31 @@ function drawCurves(maxT = gameState.maxT) {
             // bgCtx.fillText(index.toString(), canvasPoint.x, canvasPoint.y);
             bgCtx.save();
             bgCtx.translate(canvasPoint.x, canvasPoint.y);
-            bgCtx.rotate(((gameState.numberOfPlayers % 2 == 0 ? 0.5 : 0.75) + index/(sideLength * 2 + 1)) * 2 * Math.PI / gameState.numberOfPlayers - Math.PI / 2);
+            bgCtx.rotate(((currentBoard.numPlayers % 2 == 0 ? 0.5 : 0.75) + index/(currentBoard.layerLength)) * 2 * Math.PI / currentBoard.numPlayers - Math.PI / 2);
             bgCtx.fillText(getRandomArrow(), 0, 0);
             bgCtx.restore();
 
-            // Add home path - `gameState.pathToHome-1` circles toward center
+            // Add home path - `currentBoard.homeLayerLength-1` circles toward center
             const boardCenter = { x: bgCanvas.width / 2, y: bgCanvas.height / 2 };
-            const playerIndex = Math.floor(index / (sideLength*2+1));
-            const homeColor = getPlayerColor(playerIndex / gameState.numberOfPlayers, 100, 50);
+            const playerIndex = Math.floor(index / (currentBoard.layerLength));
+            const homeColor = getPlayerColor(playerIndex / currentBoard.numPlayers, 100, 50);
             
             // Draw path to center
-            for (let i = 1; i <= gameState.pathToHome; i++) {
-                const ratio = i / (gameState.pathToHome+1); // Divide distance into `gameState.pathToHome+1` parts (1/(gameState.pathToHome+1), ... gameState.pathToHome/(gameState.pathToHome+1))
+            for (let i = 1; i <= currentBoard.homeLayerLength; i++) {
+                const ratio = i / (currentBoard.homeLayerLength+1); // Divide distance into `currentBoard.homeLayerLength+1` parts (1/(currentBoard.homeLayerLength+1), ... currentBoard.homeLayerLength/(currentBoard.homeLayerLength+1))
                 const homeX = canvasPoint.x + (boardCenter.x - canvasPoint.x) * ratio;
                 const homeY = canvasPoint.y + (boardCenter.y - canvasPoint.y) * ratio;
                 
                 // Draw home circle
                 bgCtx.beginPath();
-                bgCtx.arc(homeX, homeY, gridRadius*(i==gameState.pathToHome ? 0 : 1), 0, Math.PI * 2);
+                bgCtx.arc(homeX, homeY, gridRadius*(i==currentBoard.homeLayerLength ? 0 : 1), 0, Math.PI * 2);
                 bgCtx.strokeStyle = '#888888'; // outer circle color
                 bgCtx.stroke();
                 bgCtx.fillStyle = homeColor;
                 bgCtx.fill();
                 
                 // Add number or icon to the last circle (home)
-                if (i == gameState.pathToHome) {
+                if (i == currentBoard.homeLayerLength) {
                     bgCtx.fillStyle = 'white';
                     bgCtx.fillText('🏠', homeX, homeY);
                 }
@@ -351,7 +352,8 @@ function updateDimensions() {
     container.style.height = `${bgCanvas.height}px`;
     
     // Update all player canvases
-    playerCanvases.forEach(pc => {
+    currentBoard.players.forEach(player => {
+        const pc = player.display;
         pc.canvas.width = bgCanvas.width;
         pc.canvas.height = bgCanvas.height;
         pc.canvas.style.width = `${bgCanvas.width}px`;
@@ -375,26 +377,26 @@ function updateDimensions() {
     gameInfo.style.borderRadius = `${baseUnit * 0.5}px`;
     
     // Update all dots with new radius
-    playerCanvases.forEach(pc => {
-        pc.dots.forEach(dot => {
-            dot.radius = gameState.boardSizeFactor * baseUnit / Math.sqrt(gameState.numberOfPlayers);
+    currentBoard.players.forEach(player => {
+        player.display.dots.forEach(dot => {
+            dot.radius = currentBoard.boardRadius * 2 * baseUnit / Math.sqrt(currentBoard.numPlayers);
         });
     });
     
     // Redraw everything with new dimensions
     drawCurves();
-    playerCanvases.forEach(pc => drawPlayerDots(pc)); // drawPlayerDots can take optional shiftX, shiftY arguments
+    currentBoard.players.forEach(player => drawPlayerDots(player)); // drawPlayerDots can take optional shiftX, shiftY arguments
     
     // Add this to your updateDimensions function
-    if (gameState.playerControls) {
+    if (playerControls) {
         // Update controls position and size
-        gameState.playerControls.container.style.top = `${baseUnit * 0.8}px`;
-        gameState.playerControls.container.style.right = `${baseUnit * 0.8}px`;
-        gameState.playerControls.display.style.fontSize = `${baseUnit * 2}px`;
-        gameState.playerControls.upButton.style.width = `${baseUnit * 2.5}px`;
-        gameState.playerControls.upButton.style.height = `${baseUnit * 2.5}px`;
-        gameState.playerControls.downButton.style.width = `${baseUnit * 2.5}px`;
-        gameState.playerControls.downButton.style.height = `${baseUnit * 2.5}px`;
+        playerControls.container.style.top = `${baseUnit * 0.8}px`;
+        playerControls.container.style.right = `${baseUnit * 0.8}px`;
+        playerControls.display.style.fontSize = `${baseUnit * 2}px`;
+        playerControls.upButton.style.width = `${baseUnit * 2.5}px`;
+        playerControls.upButton.style.height = `${baseUnit * 2.5}px`;
+        playerControls.downButton.style.width = `${baseUnit * 2.5}px`;
+        playerControls.downButton.style.height = `${baseUnit * 2.5}px`;
     }
 
     // Update dice size if it exists
@@ -413,34 +415,35 @@ function updateDimensions() {
 // Update dot radius, stroke width, and other visual elements
 function updateVisualElements() {
     // Scale everything with baseUnit
-    playerCanvases.forEach(pc => {
+    currentBoard.players.forEach(player => {
+        const pc = player.display;
         pc.dots.forEach(dot => {
-            dot.radius = gameState.boardSizeFactor * baseUnit / Math.sqrt(gameState.numberOfPlayers); // Smaller than grid circles
+            dot.radius = currentBoard.boardRadius * 2 * baseUnit / Math.sqrt(currentBoard.numPlayers); // Smaller than grid circles
 
             // Recalculate dot positions after resize
             if (dot.inStartingArea) {
                 // Recalculate starting positions
-                const pathStartingIndex = (playerCanvases.indexOf(pc) * (sideLength*2+1)) + 2;
+                const pathStartingIndex = (currentBoard.players.indexOf(player) * (currentBoard.layerLength)) + 2;
                 const startPathPoint = pathPoints[pathStartingIndex];
                 const startCanvasPoint = pathToCanvas(startPathPoint);
                 
-                const arcRadius = gameState.boardSizeFactor * baseUnit / Math.sqrt(gameState.numberOfPlayers) * 3;
-                const playerIndex = playerCanvases.indexOf(pc);
+                const arcRadius = currentBoard.boardRadius * 2 * baseUnit / Math.sqrt(currentBoard.numPlayers) * 3;
+                const playerIndex = currentBoard.players.indexOf(player);
                 
-                dot.startPositions = Array.from({ length: gameState.dotsPerPlayer }, (_, i) => ({
-                    x: startCanvasPoint.x - Math.cos(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) - Math.sin(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI),
-                    y: startCanvasPoint.y - Math.sin(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) + Math.cos(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI)
+                dot.startPositions = Array.from({ length: currentBoard.numBosons }, (_, i) => ({
+                    x: startCanvasPoint.x - Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI),
+                    y: startCanvasPoint.y - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) + Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI)
                 }));
             } else if (dot.inHomePath) {
                 // Recalculate home path positions
-                const playerIndex = playerCanvases.indexOf(pc);
-                const pivotIndex = (playerIndex * (sideLength*2+1));
+                const playerIndex = currentBoard.players.indexOf(player);
+                const pivotIndex = (playerIndex * (currentBoard.layerLength));
                 const pivotPoint = pathPoints[pivotIndex]; 
                 const boardCenter = { x: bgCanvas.width / 2, y: bgCanvas.height / 2 };
                 const canvasPivot = pathToCanvas(pivotPoint);
                 
                 // Calculate position based on current home path step
-                const ratio = dot.homePathStep / (gameState.pathToHome + 1);
+                const ratio = dot.homePathStep / (currentBoard.homeLayerLength + 1);
                 dot.homePathPosition = {
                     x: canvasPivot.x + (boardCenter.x - canvasPivot.x) * ratio,
                     y: canvasPivot.y + (boardCenter.y - canvasPivot.y) * ratio
@@ -461,14 +464,14 @@ function updateVisualElements() {
 
 
 // Create canvas for each player
-const playerCanvases = players.map(player => {
+currentBoard.players.forEach(player => {
     const canvas = document.createElement('canvas');
     // canvas.width = 3200;
     // canvas.height = 2400;
     canvas.style.position = 'absolute';
     canvas.style.pointerEvents = 'none'; // Make transparent to mouse events at first
     container.appendChild(canvas);
-    return {
+    player.display = {
         player: player,
         canvas: canvas,
         ctx: canvas.getContext('2d'),
@@ -479,25 +482,26 @@ const playerCanvases = players.map(player => {
 
 
 function initializeDots() {
-    playerCanvases.forEach((playerCanvas, playerIndex) => {
+    currentBoard.players.forEach((player, playerIndex) => {
+        const playerCanvas = player.display;
         playerCanvas.dots = [];
         
         // Calculate the starting circle position index
-        const pathStartingIndex = (playerIndex * (sideLength*2+1)) + 2;
+        const pathStartingIndex = (playerIndex * (currentBoard.layerLength)) + 2;
         
         // Get the pathPoint for this starting position
         const startPathPoint = pathPoints[pathStartingIndex];
         const startCanvasPoint = pathToCanvas(startPathPoint);
         
         // Get the positions of the starting circles
-        const arcRadius = gameState.boardSizeFactor * baseUnit / Math.sqrt(gameState.numberOfPlayers) * 3;
-        const positions = Array.from({ length: gameState.dotsPerPlayer }, (_,i) => ({
-            x: startCanvasPoint.x - Math.cos(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) - Math.sin(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI),
-            y: startCanvasPoint.y - Math.sin(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) + Math.cos(phaseFactor(playerIndex, gameState.numberOfPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI)
+        const arcRadius = currentBoard.boardRadius * 2 * baseUnit / Math.sqrt(currentBoard.numPlayers) * 3;
+        const positions = Array.from({ length: currentBoard.numBosons }, (_,i) => ({
+            x: startCanvasPoint.x - Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI),
+            y: startCanvasPoint.y - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) + Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI)
         }));
         
         // Create dots in starting positions
-        for (let i = 0; i < gameState.dotsPerPlayer; i++) {
+        for (let i = 0; i < currentBoard.numBosons; i++) {
             playerCanvas.dots.push({
                 inStartingArea: true,
                 inHomePath: false,
@@ -508,11 +512,11 @@ function initializeDots() {
                 index: -1,
                 moving: false,
                 targetIndex: -1,
-                radius: gameState.boardSizeFactor * baseUnit / Math.sqrt(gameState.numberOfPlayers)
+                radius: currentBoard.boardRadius * 2 * baseUnit / Math.sqrt(currentBoard.numPlayers)
             });
         }
         
-        drawPlayerDots(playerCanvas);
+        drawPlayerDots(player);
     });
 }
 
@@ -521,5 +525,5 @@ function initializeDots() {
 window.addEventListener('resize', () => {
     updateDimensions();
     updateVisualElements();
-    playerCanvases.forEach(pc => drawPlayerDots(pc));
+    currentBoard.players.forEach(player => drawPlayerDots(player));
 });
