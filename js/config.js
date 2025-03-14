@@ -4,7 +4,7 @@
 // Path parameters (amplitude, frequency, etc.)
 
 const sideLength = 6;
-const resParameter = 150;
+const resParameter = 100;
 // Add responsive design support
 let aspectRatio = 4/3; // Standard game board aspect ratio
 // animation speed
@@ -13,7 +13,7 @@ const fastSpeedFactor = 0.2;
 // Player colors and data
 // Game state
 let gameState = {
-    currentPlayerIndex: 0,
+    currentPlayerIndex: 2,
     numberOfPlayers: 4,
     dotsPerPlayer: 4,
     pathToHome: sideLength,
@@ -32,9 +32,4 @@ let players = Array.from({ length: gameState.numberOfPlayers }, (_, k) => {
 });
 
 
-function getPlayerNewPawn(i) {
-    do {
-        players[i].name = getRandomPawn();
-    } while (players.slice(0, i).some(p => players[i].name === p.name));
-}
 

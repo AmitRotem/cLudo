@@ -33,9 +33,24 @@ function getPlayerColor(k, s=100, l=50, playerCount=1) {
 }
 
 function getRandomPawn(ty = 0) {
-    const pawns = ['💩 👻 🐒 🦍 🦧 🐕 🦮 🐕‍🦺 🐩 🐈 🐈‍⬛ 🐅 🐆 🐎 🦓 🦌 🦬 🐂 🐃 🐄 🐖 🐏 🐑 🐐 🐪 🐫 🦙 🦒 🦘 🦥 🦦 🦨 🦘 🦡 🦃 🐔 🐓 🐣 🐤 🐥 🐦 🐧 🐦 🦉 🦅 🦆 🦢 🦜 🦩 🕊️ 🐊 🐢 🦎 🐍 🐲 🐉 🦕 🦖 🐳 🐋 🐬 🦭 🐟 🐠 🐡 🦈 🐙 🐚 🦀 🦞 🦐 🦑 🦪 🐌 🦋 🐛 🐜 🐝 🐞 🦗 🕷️ 🕸️ 🦂 🦟 🪰 🪲'.split(' '),
-        '😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😛 😝 😜 🤪 🤨 🧐 🤓 😎 🥸 🤩 🥳 😏 😒 😞 😔 😟 😕 🙁 ☹️ 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 🤯 😳 🥵 🥶 😱 😨 😰 😥 😓 🤗 🤔 🤭 🤫 🤥 😶 😐 😑 😬 🙄 😯 😦 😧 😮 😲 🥱 😴 🤤 😪 😵 🤐 🥴 🤢 🤮 🤧 😷 🤒 🤕 🤑 🤠'.split(' ')];
+    const pawns = [
+        ['🐒', '🦍', '🦧', '🐕', '🦮', '🐕‍🦺', '🐩', '🐈', '🐈‍⬛', '🐅', '🐆', '🐎', '🦓', '🦌', '🦬', '🐂', '🐃', '🐄', '🐖', '🐗', '🐏', '🐑', '🐐', '🐪', '🐫', '🦙', '🦒', '🐘', '🦣', '🦏', '🦛', '🐁', '🐀', '🐇', '🐿️', '🦫', '🦔', '🦇', '🦥', '🦦', '🦨', '🦘', '🦡', '🦃', '🐓', '🐣', '🐤', '🐥', '🐦', '🐧', '🕊️', '🦅', '🦆', '🦢', '🦉', '🦤', '🦩', '🦚', '🦜', '🐸', '🐊', '🐢', '🦎', '🐍', '🐲', '🐉', '🦕', '🦖', '🐳', '🐋', '🐬', '🦭', '🐟', '🐠', '🐡', '🦈', '🐙', '🐚', '🪸', '🦀', '🦞', '🦐', '🦑', '🦪', '🐌', '🦋', '🐛', '🐜', '🐝', '🪲', '🐞', '🦗', '🕷️', '🦂', '🦟', '🪰', '🪱', '🦠', '☃️', '⛄'],
+        '😀 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😛 😝 😜 🤪 🤨 🧐 🤓 😎 🥸 🤩 🥳 😏 😒 😞 😔 😟 😕 🙁 ☹️ 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 🤯 😳 🥵 🥶 😱 😨 😰 😥 😓 🤗 🤔 🤭 🤫 🤥 😶 😐 😑 😬 🙄 😯 😦 😧 😮 😲 🥱 😴 🤤 😪 😵 🤐 🥴 🤢 🤮 🤧 😷 🤒 🤕 🤑 🤠'.split(' ')
+    ];
     return pawns[ty][Math.floor(Math.random() * pawns[ty].length)]
+}
+
+function getPlayerDistinctPawn(playerCanvases,i,change=false) {
+    const pl = playerCanvases[i].player
+    const oldPawn = pl.name;
+    for (k = 0; k < 1000; k++) {
+        if (playerCanvases.some((pc,j) => j!=i && pc.player.name == pl.name) || (change && pl.name == oldPawn)) {
+            pl.name = getRandomPawn();
+        } else {
+            return;
+        }
+    }
+    console.error('Could not find distinct pawn');
 }
 
 function getRandomArrow() {

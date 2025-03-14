@@ -76,15 +76,15 @@ container.appendChild(scoreBoard);
 
 // Function to update the scoreboard
 function updateScoreBoard() {
-    // 😈 😇
     const scores = calcScore();
     let scoreText = '<br><br>Scores:<br>';
     players.forEach((player, index) => {
         scoreText += `${player.name}: ${scores[index]}`;
         if (gameState.autoMover[index]) {
             sufix = "  "
-            if ("Nice" == gameState.playerType[index]) {sufix+='😇'};
+            if ("Naive" == gameState.playerType[index]) {sufix+='😇'};
             if ("Angry" == gameState.playerType[index]) {sufix+='😈'};
+            if ("Nice"  == gameState.playerType[index]) {sufix+='😗'};
             // if ("Human" == gameState.playerType[index]) {sufix+='🙂'};
             scoreText += sufix
         }
@@ -106,27 +106,36 @@ const gameInfo = document.createElement('div');
 container.appendChild(gameInfo);
 
 function calcPathPoints() {
-    segmentPoints = Array.from({ length: (sideLength-1)*resParameter+1 }, (_, i) => path(i/resParameter));
-    
-    // Recalculate segment distances
-    segmentDiffs = [];
+    // sample path from 0 to sideLength+0.5; that is from pivot (at 0) to mid point to next pivot (at 2*sideLength+1)
+    const factor = (sideLength+0.5)/(sideLength*resParameter);
+    segmentPoints = Array.from({ length: sideLength*resParameter+1 }, (_, i) => path(i*factor));
+
+    // calculate segment distances
+    segmentDiffs = [0];
     for (let i = 0; i < segmentPoints.length - 1; i++) {
         const dx = segmentPoints[i + 1].x - segmentPoints[i].x;
         const dy = segmentPoints[i + 1].y - segmentPoints[i].y;
         segmentDiffs.push(Math.sqrt(dx * dx + dy * dy));
     }
-    
+
     // Recalculate cumulative distances and path points
+    // sideLength+1 points with equalize distances from 0 to sideLength+0.5
     cumulativeDistances = cumsum(segmentDiffs);
+    cumulativeDistances = cumulativeDistances.map(x => x*(sideLength + 1)/cumulativeDistances.slice(-1))
     pathIndex = [];
-    for (let i = 0; i <= sideLength; i++) {
-        let targetDistance = i * cumulativeDistances[cumulativeDistances.length - 1] / sideLength;
+    for (let i = 0; i <= sideLength+1; i++) {
+        let targetDistance = i ;
         let index = cumulativeDistances.findIndex(distance => distance >= targetDistance);
-        pathIndex.push(index/resParameter);
+        pathIndex.push(index*factor);
     }
+    pathIndex.pop(); // last point is at sideLength+0.5 and is not needed
     
+    // Add the reverse path, to the next pivot
+    // slice to create a copy of the array
     pathIndex = pathIndex.concat(pathIndex.slice().reverse().map(x => (2*sideLength+1) - x));
-    pathIndex.pop();
+    pathIndex.pop(); // remove the last point, which is the pivot
+    
+    // now iterate for each player
     pathPoints = [];
     for (let j = 0; j < gameState.numberOfPlayers; j++) {
         pathPoints = pathPoints.concat(pathIndex.map(index => path(index + j*(2*sideLength+1))));

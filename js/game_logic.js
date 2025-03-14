@@ -7,6 +7,7 @@
 // TODO now
 // preper to quantize the game - add `state` and `pattern` to playerCanvas, add `measurement` and `project` functions, redestribute pattern in starting area if possible, finally add `selfInteraction` function (game start classical, then quantum effects comes in via `selfInteraction`, like in a HOM experiment)\
 
+
 // TODO later
 // larger board - change `boardSizeFactor` and `boardRadius` (in config.js) dynamically ? 
 // background color ~ in `styles.css` in `body`
@@ -26,7 +27,7 @@ function test() {
 function myMaxRandom(numberOfDices = 1) {
     numberOfDices > 1 && console.log(`Rolling ${numberOfDices} dice`);
     const rolls = Array.from({ length: numberOfDices }, () => Math.floor(Math.random() * gameState.dieFaces) + 1);
-    if (testMode && !gameState.autoMover[gameState.currentPlayerIndex]) {
+    if (testMode) {
         const userNumber = parseInt(prompt("Enter a number:"));
         return userNumber;
     }
@@ -121,6 +122,9 @@ function checkForCollision(currentPlayerCanvas, i) {
                 if (gameState.autoMover[k]) {
                     gameState.playerType[k] = "Angry"; // make autoMover angry
                 }
+                if (gameState.autoMover[gameState.currentPlayerIndex]) {
+                    gameState.playerType[gameState.currentPlayerIndex] = "Nice"; // relax autoMover
+                }
                 collision = true;
                 gameState.extraTurn = true;
             }
@@ -211,29 +215,39 @@ function autoMove() {
     
     const playerType = gameState.playerType[gameState.currentPlayerIndex];
     moveScore = Array.from({ length: dots.length }, () => 0);
-    if ("Nice" == playerType) {
+    if ("Naive" == playerType) {
         for (let i = 0; i < dots.length; i++) {
-            if (canMove[i]              ) {moveScore[i] += 100;} // can move
-            if (dotsInSafeZone[i]       ) {moveScore[i] -= 0;} // don't move if already in safe zone
-            if (dotsGettingToSafeZone[i]) {moveScore[i] += 0;} // move to safe zone
-            if (dotsGettingHome[i]      ) {moveScore[i] += 2;} // move home
-            if (dotsInStartingArea[i]   ) {moveScore[i] += 4;} // move out of starting area
+            if (!canMove[i]             ) {moveScore[i] -= 100} // can move
+            if (dotsInSafeZone[i]       ) {moveScore[i] -= 0} // don't move if already in safe zone
+            if (dotsGettingToSafeZone[i]) {moveScore[i] += 0} // move to safe zone
+            if (dotsGettingHome[i]      ) {moveScore[i] += 2} // move home
+            if (dotsInStartingArea[i]   ) {moveScore[i] += 4} // move out of starting area
             if (dotsColliding[i]        ) {moveScore[i] -= 8} //
             moveScore[i] += Math.random() * 0.01; // add some randomness
         }
     } else if ("Angry" == playerType) {
         for (let i = 0; i < dots.length; i++) {
-            if (canMove[i]              ) {moveScore[i] += 100;} // can move
-            if (dotsInSafeZone[i]       ) {moveScore[i] -= 1;} // don't move if already in safe zone
-            if (dotsGettingToSafeZone[i]) {moveScore[i] += 1;} // move to safe zone
-            if (dotsGettingHome[i]      ) {moveScore[i] += 2;} // move home
-            if (dotsInStartingArea[i]   ) {moveScore[i] += 4;} // move out of starting area
+            if (!canMove[i]             ) {moveScore[i] -= 100} // can move
+            if (dotsInSafeZone[i]       ) {moveScore[i] -= 1} // don't move if already in safe zone
+            if (dotsGettingToSafeZone[i]) {moveScore[i] += 1} // move to safe zone
+            if (dotsGettingHome[i]      ) {moveScore[i] += 2} // move home
+            if (dotsInStartingArea[i]   ) {moveScore[i] += 4} // move out of starting area
             if (dotsColliding[i]        ) {moveScore[i] += 8} //
+            moveScore[i] += Math.random() * 0.01; // add some randomness
+        }
+    } else if ("Nice" == playerType) {
+        for (let i = 0; i < dots.length; i++) {
+            if (!canMove[i]             ) {moveScore[i] -= 100} // can move
+            if (dotsInSafeZone[i]       ) {moveScore[i] -= 1} // don't move if already in safe zone
+            if (dotsGettingToSafeZone[i]) {moveScore[i] += 1} // move to safe zone
+            if (dotsGettingHome[i]      ) {moveScore[i] += 2} // move home
+            if (dotsInStartingArea[i]   ) {moveScore[i] += 4} // move out of starting area
+            if (dotsColliding[i]        ) {moveScore[i] -= 0} //
             moveScore[i] += Math.random() * 0.01; // add some randomness
         }
     } else if ("Human" == playerType) { // random
         for (let i = 0; i < dots.length; i++) {
-            if (canMove[i]              ) {moveScore[i] += 100;} // can move
+            if (!canMove[i]             ) {moveScore[i] -= 100} // can move
             moveScore[i] += Math.random() * 0.01; // add some randomness
         }
     } else {ErrorEvent("Unknown player type!")}

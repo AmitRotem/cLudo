@@ -128,7 +128,7 @@ function handleSetupClick(e) {
             const dot = pc.dots[j];
             if (isPointInDot(x, y, dot, pc)) {
                 // Change name
-                getPlayerNewPawn(i);
+                getPlayerDistinctPawn(playerCanvases, i, true);
                 // Redraw the dots
                 drawPlayerDots(pc);
                 // Update score board
@@ -150,11 +150,14 @@ function updateDiceLocation(resetFace) {
         const playerIndex = playerCanvases.indexOf(currentPlayerCanvas);
         const pivotIndex = (playerIndex * (sideLength*2+1));
         const pivotPoint = pathPoints[pivotIndex];
+        // set die position
         const factor = 1.25;
         const canvasPivot = pathToCanvas({x: pivotPoint.x*factor, y: pivotPoint.y*factor});
-        canvasPivot.x < visualViewport.width/2 && (canvasPivot.x = diceElement.offsetWidth);
-        canvasPivot.x >= visualViewport.width/2 && (canvasPivot.x = visualViewport.width - diceElement.offsetWidth);
-        canvasPivot.y = Math.min(Math.max(diceElement.offsetHeight, canvasPivot.y), visualViewport.height-diceElement.offsetHeight)
+        // snap position to edge of canvas
+        canvasPivot.x < bgCanvas.width/2 && (canvasPivot.x = diceElement.offsetWidth);
+        canvasPivot.x >= bgCanvas.width/2 && (canvasPivot.x = bgCanvas.width - diceElement.offsetWidth);
+        canvasPivot.y = Math.min(Math.max(diceElement.offsetHeight, canvasPivot.y), bgCanvas.height-diceElement.offsetHeight)
+        // place die
         diceElement.style.left = `${canvasPivot.x - diceElement.offsetWidth / 2}px`;
         diceElement.style.top = `${canvasPivot.y - diceElement.offsetHeight / 2}px`;
     }

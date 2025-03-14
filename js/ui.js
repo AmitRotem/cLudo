@@ -198,7 +198,7 @@ function resetGame() {
         ...Array.from({ length: gameState.numberOfPlayers }, (_, i) => ((i * playerArea) - 3 + gameState.maxT) % gameState.maxT)
         ].sort((a, b) => a - b);
     gameState.autoMover = Array.from({ length: gameState.numberOfPlayers }, () => false);
-    gameState.playerType = Array.from({ length: gameState.numberOfPlayers }, (j) => gameState.autoMover[j] ? "Nice" : "Human");
+    gameState.playerType = Array.from({ length: gameState.numberOfPlayers }, (j) => gameState.autoMover[j] ? "Naive" : "Human");
     gameState.currentPlayerIndex = 0;
     gameState.animating = false;
     gameState.gameStarted = false;
@@ -208,10 +208,6 @@ function resetGame() {
     players = Array.from({ length: gameState.numberOfPlayers }, (_, k) => {
         return { color: getPlayerColor(k / gameState.numberOfPlayers), name: getRandomPawn()};
     });
-    for (let i = 0; i < players.length; i++) {
-        if (players.every((p,j) => j==i || players[i].name != p.name)) {continue;}
-        getPlayerNewPawn(i);
-    }
     
     // Update canvas references
     while (container.children.length > 1) {
@@ -240,6 +236,9 @@ function resetGame() {
             dots: []
         });
     });
+
+    // make sure all players have distinct pawns
+    for (let i = 0; i < players.length; i++) {getPlayerDistinctPawn(playerCanvases, i)};
     
     // Re-add game info
     container.appendChild(gameInfo);
@@ -293,7 +292,7 @@ function createAutoButton() {
     autoButton.style.display = 'block';
     autoButton.addEventListener('click', () => {
         gameState.autoMover[gameState.currentPlayerIndex] = true;
-        gameState.playerType[gameState.currentPlayerIndex] = "Nice";
+        gameState.playerType[gameState.currentPlayerIndex] = "Naive";
         console.log(`Player ${gameState.currentPlayerIndex} is now an auto mover`);
         handleDiceClick();
     });
