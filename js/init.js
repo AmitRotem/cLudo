@@ -68,13 +68,13 @@ function handleCanvasClick(e) {
         return;
     }
     
-    const currentPlayer = currentBoard.players[currentBoard.currentPlayerIndex];
-    const moveAmount = currentPlayer.die; // Use stored roll result
-    const currentPlayerCanvas = currentPlayer.display;
+    const player = currentBoard.players[currentBoard.currentPlayerIndex];
+    const moveAmount = player.die; // Use stored roll result
+    const playerCanvas = player.display;
     
     // Check each dot of current player
-    for (let i = 0; i < currentPlayerCanvas.dots.length; i++) {
-        const dot = currentPlayerCanvas.dots[i];
+    for (let i = 0; i < playerCanvas.dots.length; i++) {
+        const dot = playerCanvas.dots[i];
         
         // Check if we clicked on this dot
         let dotClicked = false;
@@ -87,7 +87,7 @@ function handleCanvasClick(e) {
             dotClicked = (dx * dx + dy * dy) <= (dot.radius * dot.radius);
             
             if (dotClicked) {
-                moveDotOutOfStartingArea(currentPlayerCanvas, i, moveAmount);
+                moveDotOutOfStartingArea(player, i, moveAmount);
                 return;
             }
         } else if (dot.inHomePath) {
@@ -97,15 +97,15 @@ function handleCanvasClick(e) {
             dotClicked = (dx * dx + dy * dy) <= (dot.radius * dot.radius);
             
             if (dotClicked) {
-                moveDotAlongHomePath(currentPlayerCanvas, i, moveAmount);
+                moveDotAlongHomePath(player, i, moveAmount);
                 return;
             }
         } else {
             // Check if dot on main path was clicked
-            dotClicked = isPointInDot(x, y, dot, currentPlayerCanvas);
+            dotClicked = isPointInDot(x, y, dot);
             
             if (dotClicked) {
-                moveDotAlongMainPath(currentPlayerCanvas, i, moveAmount);
+                moveDotAlongMainPath(player, i, moveAmount);
                 return;
             }
         }

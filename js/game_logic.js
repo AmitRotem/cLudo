@@ -5,8 +5,7 @@
 // Win condition checking
 
 // TODO now
-// game is stuck on 2nd 6 - fix it
-// remove emoji heads
+// if roll is larger than path to home, game gets stuck
 // make currentBoard.players[k].display.dots defined by values from currentBoard.players[k] - and remove redundant values from currentBoard.players[k].display.dots
 // any changes ...dots should come from changes in currentBoard.players[k]
 // preper to quantize the game - add `state` and `pattern` to playerCanvas, add `measurement` and `project` functions, redestribute pattern in starting area if possible, finally add `selfInteraction` function (game start classical, then quantum effects comes in via `selfInteraction`, like in a HOM experiment)\
@@ -186,7 +185,7 @@ function checkWhoCanMove(player, moveAmount) { // list of true/false if dot can 
         if (dot.inStartingArea && moveAmount === currentBoard.dieSize) {
             return true;
         } else if (!dot.inStartingArea && !dot.inHomePath) {
-            const pivotIndex = gameState.pivotIndex[gameState.currentPlayerIndex];
+            const pivotIndex = player.pivotIndex;
             const featureIndex = Array.from({ length: moveAmount + 1 }, (_, i) => (dot.index + i) % pathPoints.length);
             const willReachPivot = featureIndex.includes(pivotIndex);
             if (!willReachPivot) {return true;};

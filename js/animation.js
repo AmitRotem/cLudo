@@ -86,7 +86,7 @@ function handleDiceClick() {
                 if (autoMoveDot) {
                     autoMove();
                 } else {
-                    animateMoveableDots(currentPlayerCanvas, rollResult);
+                    animateMoveableDots(player, rollResult);
                 }
             }, (allAutoMovers ? fastSpeedFactor : 1)*300);
         }
@@ -375,7 +375,7 @@ function moveToHomePathEntry(player, dotIndex, remainingSteps, onComplete) {
 
 function animateMoveableDots(player, moveAmount) {
     const playerCanvas = player.display;
-    const moveableDots = getMoveableDots(playerCanvas, moveAmount);
+    const moveableDots = getMoveableDots(player, moveAmount);
     let counter = 0;
     const interval = 100;
     const moveableDotsInterval = setInterval(() => {
