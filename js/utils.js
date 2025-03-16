@@ -77,6 +77,8 @@ function cumsum(arr) {
     return arr.map(value => sum += value);
 }
 
+//
+// TODO; define simple permanent function
 
 // Default parametric function
 function pulse(theta, frequency, phaseOffset) {
@@ -85,7 +87,6 @@ function pulse(theta, frequency, phaseOffset) {
     let drt = Math.cos(frequency * theta + phaseOffset);
     return 2*(1-(0.5-0.5*drt)**p1)**p2 - 1;
 }
-
 
 function path(t) {
     const amplitude = 0.5;

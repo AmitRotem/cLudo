@@ -162,7 +162,6 @@ function drawPlayerDots(player, shiftXlist=0, shiftYlist=0) {
     });
 }
 
-
 function isPointInDot(x, y, dot, playerCanvas) {
     let dotPosX, dotPosY;
     

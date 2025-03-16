@@ -5,6 +5,8 @@
 // Win condition checking
 
 // TODO now
+// game is stuck on 2nd 6 - fix it
+// remove emoji heads
 // make currentBoard.players[k].display.dots defined by values from currentBoard.players[k] - and remove redundant values from currentBoard.players[k].display.dots
 // any changes ...dots should come from changes in currentBoard.players[k]
 // preper to quantize the game - add `state` and `pattern` to playerCanvas, add `measurement` and `project` functions, redestribute pattern in starting area if possible, finally add `selfInteraction` function (game start classical, then quantum effects comes in via `selfInteraction`, like in a HOM experiment)\

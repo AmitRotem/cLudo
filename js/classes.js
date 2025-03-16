@@ -40,6 +40,7 @@ class Board {
         this.gameStarted = false;
         this.gameEnded = false;
         this.animating = false;
+        this.display = null;
     }
 }
 
