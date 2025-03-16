@@ -181,13 +181,13 @@ function checkWinCondition(player) {
 function checkWhoCanMove(player, moveAmount) { // list of true/false if dot can move
     const playerCanvas = player.display;
     const dots = playerCanvas.dots;
-    // Filter dots that can move
+    // check which dot can move
     const canMove = dots.map(dot => {
         if (dot.inStartingArea && moveAmount === currentBoard.dieSize) {
             return true;
         } else if (!dot.inStartingArea && !dot.inHomePath) {
-            const pivotIndex = player.outputIndex;
-            const featureIndex = Array.from({ length: moveAmount + 1 }, (_, i) => (dot.index + i) % currentBoard.circuitLength);
+            const pivotIndex = gameState.pivotIndex[gameState.currentPlayerIndex];
+            const featureIndex = Array.from({ length: moveAmount + 1 }, (_, i) => (dot.index + i) % pathPoints.length);
             const willReachPivot = featureIndex.includes(pivotIndex);
             if (!willReachPivot) {return true;};
             const stepsAfterPivot = moveAmount - featureIndex.findIndex(index => index === pivotIndex);
