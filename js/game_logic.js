@@ -5,9 +5,14 @@
 // Win condition checking
 
 // TODO now
-// if roll is larger than path to home, game gets stuck
-// make currentBoard.players[k].display.dots defined by values from currentBoard.players[k] - and remove redundant values from currentBoard.players[k].display.dots
-// any changes ...dots should come from changes in currentBoard.players[k]
+/// make game use;
+// player.locations
+// player.state
+// player.patterns
+// player.bosonsInPlay # calc from locations ?
+// player.finishedBosons # calc from locations ?
+
+// any changes to ...dots should come from changes in currentBoard.players[k]
 // preper to quantize the game - add `state` and `pattern` to playerCanvas, add `measurement` and `project` functions, redestribute pattern in starting area if possible, finally add `selfInteraction` function (game start classical, then quantum effects comes in via `selfInteraction`, like in a HOM experiment)\
 
 
@@ -21,21 +26,6 @@
 // see also `handleDiceClick` in `js/animations.js`
 
 let testMode = false
-function test1() {
-    testMode = !testMode;
-    console.log(`Test mode: ${testMode}`);
-    return testMode;
-}
-
-function test2() {
-    currentBoard.players.forEach(player => {
-        player.autoMove = true;
-        player.style = "Naive";
-    });
-    console.log(`Test mode 2: auto play on`);
-    handleDiceClick();
-}
-
 function myMaxRandom(numberOfDices = 1) {
     numberOfDices > 1 && console.debug(`Rolling ${numberOfDices} dice`);
     const rolls = Array.from({ length: numberOfDices }, () => Math.floor(Math.random() * currentBoard.dieSize) + 1);
@@ -55,12 +45,12 @@ function moveDotOutOfStartingArea(player, i, moveAmount) {
         const dot = playerCanvas.dots[i];
         // Move to the starting position on the path
         dot.inStartingArea = false;
-        dot.index = dot.pathEntryIndex;
-        dot.targetIndex = dot.pathEntryIndex;
+        dot.index = player.inputIndex;
+        dot.targetIndex = player.inputIndex;
         
         // Animate the movement
         playSound('start');
-        animateDotTeleport(player, i, pathToCanvas(pathPoints[dot.pathEntryIndex]),
+        animateDotTeleport(player, i, pathToCanvas(pathPoints[player.inputIndex]),
             ()=>nextTurn());
         return;
     } else {
@@ -92,7 +82,7 @@ function moveDotAlongMainPath(player, i, moveAmount) {
     // Get the current path position
     const currentIndex = dot.index;
     // Check if dot will reach or pass its pivot point
-    const pivotIndex = currentBoard.players[currentBoard.currentPlayerIndex].outputIndex;
+    const pivotIndex = player.outputIndex;
     const featureIndex = Array.from({ length: moveAmount + 1 }, (_, i) => (currentIndex + i) % currentBoard.circuitLength);
     const willPassPivot = featureIndex.slice(0,-1).includes(pivotIndex);
 
@@ -178,6 +168,7 @@ function checkWinCondition(player) {
 }
 
 function checkWhoCanMove(player, moveAmount) { // list of true/false if dot can move
+    console.debug(`checkWhoCanMove`);
     const playerCanvas = player.display;
     const dots = playerCanvas.dots;
     // check which dot can move
@@ -185,11 +176,17 @@ function checkWhoCanMove(player, moveAmount) { // list of true/false if dot can 
         if (dot.inStartingArea && moveAmount === currentBoard.dieSize) {
             return true;
         } else if (!dot.inStartingArea && !dot.inHomePath) {
-            const pivotIndex = player.pivotIndex;
+            const pivotIndex = player.outputIndex;
+            console.debug(`pivotIndex: ${pivotIndex}`);
             const featureIndex = Array.from({ length: moveAmount + 1 }, (_, i) => (dot.index + i) % pathPoints.length);
+            console.debug(`featureIndex: ${featureIndex}`);
             const willReachPivot = featureIndex.includes(pivotIndex);
+            console.debug
             if (!willReachPivot) {return true;};
+            console.debug(`willReachPivot: ${willReachPivot}`);
             const stepsAfterPivot = moveAmount - featureIndex.findIndex(index => index === pivotIndex);
+            console.debug(`stepsAfterPivot: ${stepsAfterPivot}`);
+            console.debug(`stepsAfterPivot <= currentBoard.homeLayerLength`);
             if (stepsAfterPivot <= currentBoard.homeLayerLength) {
                 return true;
             } else {
@@ -200,6 +197,7 @@ function checkWhoCanMove(player, moveAmount) { // list of true/false if dot can 
         }
         return false;
     });
+    console.debug(`canMove: ${canMove}`);
     return canMove;
 }
 
@@ -304,24 +302,6 @@ function moveDot(currentPlayerCanvas, dotIndex, moveAmount) {
 }
 
 
-function testDice(N = 2**14) {
-    let rolls = Array.from({ length: N }, () => myMaxRandom());
-    const occurences = rolls.reduce((acc, value) => {
-        acc[value - 1]++;
-        return acc;
-    }, [0,0,0,0,0,0]);
-    const meanOccurences = occurences.map(occurence => (occurence / N - 1 / 6)/(Math.sqrt(5/N)/6));
-    
-    const meanRolls = rolls.reduce((a, b) => a + b, 0) / N
-    rolls = rolls.map(value => value - meanRolls);
-    let c0 = rolls.map((value, index) => value * rolls[index])
-    c0 = c0.reduce((acc, value) => acc + value, 0) / rolls.length
-    let c1 = rolls.slice(0, -1).map((value, index) => value * rolls[index + 1])
-    c1 = c1.reduce((acc, value) => acc + value, 0) / (rolls.length-1)
-    return meanOccurences.map(value => Math.round(value * 10000) / 10000) + ";;corr;;" + [c1/c0];
-}
-
-
 function calcScore() {
     scores = Array.from({ length: currentBoard.numPlayers }, () => 0);
     for (let i = 0; i < currentBoard.numPlayers; i++) {
@@ -329,7 +309,7 @@ function calcScore() {
             dot = currentBoard.players[i].display.dots[j];
             if (dot.inStartingArea) {continue}
             scores[i] += currentBoard.dieSize // move out of starting area
-            dist = dot.index - dot.pathEntryIndex
+            dist = dot.index - currentBoard.players[i].inputIndex
             if (dist < 0) {dist += currentBoard.circuitLength}
             scores[i] += dist
             if (dot.inHomePath) {scores[i] += dot.homePathStep}

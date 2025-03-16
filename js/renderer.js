@@ -1,78 +1,3 @@
-// Canvas initialization
-// Board rendering functions
-// Path drawing
-// Dot/pawn rendering
-// Coordinate conversion functions
-
-// Create background canvas for static curves
-const bgCanvas = document.createElement('canvas');
-const bgCtx = bgCanvas.getContext('2d');
-// bgCanvas.width = 3200;
-// bgCanvas.height = 2400;
-bgCanvas.style.border = 'none'; // Remove the border
-bgCanvas.style.margin = '0';    // Remove margin
-bgCanvas.style.display = 'block';
-bgCanvas.style.position = 'absolute';
-
-// Create a container div to hold all canvases
-const container = document.createElement('div');
-container.style.position = 'relative';
-// container.style.width = '3200px';
-// container.style.height = '2400px';
-container.style.margin = '0px auto';
-document.body.appendChild(container);
-
-// Add background canvas to container
-container.appendChild(bgCanvas);
-
-// Create title overlay on the canvas
-const gameTitle = document.createElement('div');
-gameTitle.textContent = 'Ludo';
-gameTitle.style.position = 'absolute';
-gameTitle.style.top = '6px';
-gameTitle.style.left = '0';
-gameTitle.style.width = 'auto';
-gameTitle.style.textAlign = 'left';
-gameTitle.style.fontSize = '36px';
-gameTitle.style.fontWeight = 'bold';
-gameTitle.style.color = '#333';
-gameTitle.style.textShadow = '2px 2px 4px rgba(255, 255, 255, 0.7)';
-gameTitle.style.pointerEvents = 'auto'; // Allow clicks
-gameTitle.style.zIndex = '100'; // Ensure it's on top
-container.appendChild(gameTitle);
-
-// Add click event to toggle full screen mode
-gameTitle.addEventListener('click', () => {
-    console.debug('Toggling full screen mode');
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            console.warn(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-        });
-    } else {
-        document.exitFullscreen();
-    }
-    // redraw everything after resizing
-    updateDimensions();
-    updateVisualElements();
-    currentBoard.players.forEach(player => drawPlayerDots(player));
-    if (currentBoard.gameEnded) {resetGame();}
-});
-
-// Create scoreboard below the title
-const scoreBoard = document.createElement('div');
-scoreBoard.id = 'score-board';
-scoreBoard.style.position = 'absolute';
-scoreBoard.style.top = '50px';
-scoreBoard.style.left = '0';
-scoreBoard.style.width = 'auto';
-scoreBoard.style.textAlign = 'left';
-scoreBoard.style.fontSize = '24px';
-scoreBoard.style.fontWeight = 'bold';
-scoreBoard.style.color = '#333';
-scoreBoard.style.textShadow = '2px 2px 4px rgba(255, 255, 255, 0.7)';
-scoreBoard.style.pointerEvents = 'none'; // Prevent clicks
-scoreBoard.style.zIndex = '100'; // Ensure it's on top
-container.appendChild(scoreBoard);
 
 // Function to update the scoreboard
 function updateScoreBoard() {
@@ -93,17 +18,6 @@ function updateScoreBoard() {
     scoreBoard.innerHTML = scoreText;
 }
 
-
-// Create UI elements
-const gameInfo = document.createElement('div');
-// gameInfo.style.position = 'absolute';
-// gameInfo.style.top = '61px';
-// gameInfo.style.width = '10%';
-// gameInfo.style.textAlign = 'left';
-// gameInfo.style.fontFamily = 'Arial, sans-serif';
-// gameInfo.style.fontSize = '12px';
-// gameInfo.style.fontWeight = 'bold';
-container.appendChild(gameInfo);
 
 function calcPathPoints() {
     // sample path from 0 to sideLength+0.5; that is from pivot (at 0) to mid point to next pivot (at currentBoard.layerLength)
@@ -143,8 +57,7 @@ function calcPathPoints() {
     }
     return pathPoints;
 }
-let pathPoints;
-calcPathPoints();
+
 
 // Convert path coordinates to canvas coordinates
 function pathToCanvasX(x) {return +x * (bgCanvas.width  / 8) + bgCanvas.width  / 2}
@@ -417,7 +330,7 @@ function updateVisualElements() {
     // Scale everything with baseUnit
     currentBoard.players.forEach(player => {
         const pc = player.display;
-        pc.dots.forEach(dot => {
+        pc.dots.forEach((dot, dotIndex) => {
             dot.radius = currentBoard.boardRadius * 2 * baseUnit / Math.sqrt(currentBoard.numPlayers); // Smaller than grid circles
 
             // Recalculate dot positions after resize
@@ -430,14 +343,14 @@ function updateVisualElements() {
                 const arcRadius = currentBoard.boardRadius * 2 * baseUnit / Math.sqrt(currentBoard.numPlayers) * 3;
                 const playerIndex = currentBoard.players.indexOf(player);
                 
-                dot.startPositions = Array.from({ length: currentBoard.numBosons }, (_, i) => ({
-                    x: startCanvasPoint.x - Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI),
-                    y: startCanvasPoint.y - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) + Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI)
-                }));
+                dot.startPosition = {
+                    x: startCanvasPoint.x - Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((dotIndex+1) / 5 * Math.PI)) - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((dotIndex+1) / 5 * Math.PI),
+                    y: startCanvasPoint.y - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((dotIndex+1) / 5 * Math.PI)) + Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((dotIndex+1) / 5 * Math.PI)
+                };
             } else if (dot.inHomePath) {
                 // Recalculate home path positions
                 const playerIndex = currentBoard.players.indexOf(player);
-                const pivotIndex = (playerIndex * (currentBoard.layerLength));
+                const pivotIndex = player.outputIndex;
                 const pivotPoint = pathPoints[pivotIndex]; 
                 const boardCenter = { x: bgCanvas.width / 2, y: bgCanvas.height / 2 };
                 const canvasPivot = pathToCanvas(pivotPoint);
@@ -486,40 +399,23 @@ function initializeDots() {
         const playerCanvas = player.display;
         playerCanvas.dots = [];
         
-        // Calculate the starting circle position index
-        const pathStartingIndex = (playerIndex * (currentBoard.layerLength)) + 2;
-        
-        // Get the pathPoint for this starting position
-        const startPathPoint = pathPoints[pathStartingIndex];
-        const startCanvasPoint = pathToCanvas(startPathPoint);
-        
-        // Get the positions of the starting circles
-        const arcRadius = currentBoard.boardRadius * 2 * baseUnit / Math.sqrt(currentBoard.numPlayers) * 3;
-        const positions = Array.from({ length: currentBoard.numBosons }, (_,i) => ({
-            x: startCanvasPoint.x - Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI),
-            y: startCanvasPoint.y - Math.sin(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * (1 - Math.cos((i+1) / 5 * Math.PI)) + Math.cos(phaseFactor(playerIndex, currentBoard.numPlayers)) * arcRadius * Math.sin((i+1) / 5 * Math.PI)
-        }));
-        
         // Create dots in starting positions
         for (let i = 0; i < currentBoard.numBosons; i++) {
             playerCanvas.dots.push({
                 inStartingArea: true,
                 inHomePath: false,
                 homePathStep: 0,
-                startingPosition: i,
-                startPositions: positions,
-                pathEntryIndex: pathStartingIndex,
+                startPosition: {x:0, y:0},
                 index: -1,
                 moving: false,
                 targetIndex: -1,
-                radius: currentBoard.boardRadius * 2 * baseUnit / Math.sqrt(currentBoard.numPlayers)
+                radius: baseUnit
             });
         }
         
         drawPlayerDots(player);
     });
 }
-
 
 // Add window resize listener
 window.addEventListener('resize', () => {

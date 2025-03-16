@@ -18,6 +18,23 @@ class Player {
         this.score = 0; // dynamic
         this.style = autoMove ? ['random', 'angry', 'nice'][Math.floor(Math.random() * 3)] : 'Human'; // dynamic
         this.display = null; // dynamic
+        /// display contains:
+        /// canvas, ctx
+        /// dots
+        /// initial;
+        // homePathStep # Int
+        // inHomePath # Bool
+        // inStartingArea # Bool
+        // index # Int
+        // moving # Bool
+        // radius # Float
+        // startPosition # {x, y} location
+        // targetIndex # Int
+        
+        /// if in home path;
+        // homePathPosition # {x, y}
+        // interpolation # {x, y}
+        // stepsToHome # Int
     }
 }
 
@@ -40,7 +57,7 @@ class Board {
         this.gameStarted = false;
         this.gameEnded = false;
         this.animating = false;
-        this.display = null;
+        this.display = {};
     }
 }
 
@@ -88,6 +105,5 @@ function createBoard(numPlayers, options = {}) {
     return board;
 }
 
-// init board
 currentBoard = createBoard(4);
 console.debug(currentBoard);

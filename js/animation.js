@@ -229,8 +229,8 @@ function animateDotTeleport(player, dotIndex, targetPosition, OnComplete) {
     
     // Get starting position
     const startPosition = {
-        x: dot.startPositions[dot.startingPosition].x,
-        y: dot.startPositions[dot.startingPosition].y
+        x: dot.startPosition.x,
+        y: dot.startPosition.y
     };
     
     const duration = (allAutoMovers ? fastSpeedFactor : 1)*500; // Fixed duration for teleport
@@ -337,8 +337,7 @@ function moveToHomePathEntry(player, dotIndex, remainingSteps, onComplete) {
     currentBoard.animating = true;
     
     // Get the pivot index for this player
-    const playerIndex = currentBoard.currentPlayerIndex;
-    const pivotIndex = (playerIndex * (currentBoard.layerLength));
+    const pivotIndex = player.outputIndex;
     
     
     // Calculate steps to pivot
@@ -374,17 +373,16 @@ function moveToHomePathEntry(player, dotIndex, remainingSteps, onComplete) {
 
 
 function animateMoveableDots(player, moveAmount) {
-    const playerCanvas = player.display;
-    const moveableDots = getMoveableDots(player, moveAmount);
+    const whoCanMove = checkWhoCanMove(player, moveAmount);
+    const moveableDots = player.display.dots.filter((_, i) => whoCanMove[i]);
+    moveableDots.forEach(dot => {
+        dot.moving = true;
+    });
     let counter = 0;
     const interval = 100;
     const moveableDotsInterval = setInterval(() => {
         counter++;
         // Apply shake effect
-        moveableDots.forEach(dot => {
-            dot.moving = true;
-        });
-        const whoCanMove = Array(...playerCanvas.dots.map(dot => moveableDots.includes(dot)));
         const randomX = whoCanMove.map((canMove, index) => canMove * Math.sin(counter*interval/1000 *                2 * Math.PI * (0.95+0.1*index/moveableDots.length)) * baseUnit * Math.cos((1+2*(0.5+index)/moveableDots.length) * Math.PI/8) * 0.3);
         const randomY = whoCanMove.map((canMove, index) => canMove * Math.sin(counter*interval/1000 * (Math.sqrt(5)+1) * Math.PI * (0.95+0.1*index/moveableDots.length)) * baseUnit * Math.sin((1+2*(0.5+index)/moveableDots.length) * Math.PI/8) * 0.3);
         drawPlayerDots(player, randomX, randomY);
@@ -399,7 +397,7 @@ function sendDotToStartingArea(player, i, onComplete) {
     const playerCanvas = player.display;
     const dot = playerCanvas.dots[i];
     // dot.inStartingArea = true;
-    let moveAmount = dot.index - dot.pathEntryIndex;
+    let moveAmount = dot.index - player.inputIndex;
     if (moveAmount < 0) {
         moveAmount += pathPoints.length;
     };
@@ -407,7 +405,7 @@ function sendDotToStartingArea(player, i, onComplete) {
         dot.inStartingArea = true;
         dot.index = -1;
         dot.targetIndex = -1;
-        animateDotTeleport(player, i, dot.startPositions[dot.startingPosition], onComplete);
+        animateDotTeleport(player, i, dot.startPosition, onComplete);
     });
 }
 

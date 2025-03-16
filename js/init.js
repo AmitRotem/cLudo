@@ -48,7 +48,6 @@ function initGame() {
     currentBoard.extraTurn = false;
     
     updateGameInfo(`${currentBoard.players[currentBoard.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
-    updateGameInfo(`${testDice()}`);
 }
 
 function handleCanvasClick(e) {
@@ -81,7 +80,7 @@ function handleCanvasClick(e) {
         
         if (dot.inStartingArea) {
             // Check if dot in starting area was clicked
-            const dotPos = dot.startPositions[dot.startingPosition];
+            const dotPos = dot.startPosition;
             const dx = x - dotPos.x;
             const dy = y - dotPos.y;
             dotClicked = (dx * dx + dy * dy) <= (dot.radius * dot.radius);
@@ -123,7 +122,7 @@ function handleSetupClick(e) {
         const pc = currentBoard.players[i].display;
         for (let j = 0; j < pc.dots.length; j++) {
             const dot = pc.dots[j];
-            if (isPointInDot(x, y, dot, pc)) {
+            if (isPointInDot(x, y, dot)) {
                 // Change name
                 getPlayerDistinctPawn(currentBoard.players, i, true);
                 // Redraw the dots
@@ -139,12 +138,13 @@ function handleSetupClick(e) {
 
 function updateDiceLocation(resetFace) {
     const diceElement = document.getElementById('dice-container');
+    const playerIndex = currentBoard.currentPlayerIndex;
+    const player = currentBoard.players[playerIndex]
     if (diceElement) {        
         resetFace && (diceElement.textContent = '🎲');
         resetFace && (diceElement.style.fontSize = `${baseUnit * 5.2}px`);
-        diceElement.style.boxShadow = `0 0 10px ${currentBoard.players[currentBoard.currentPlayerIndex].color}`;
-        const playerIndex = currentBoard.currentPlayerIndex;
-        const pivotIndex = (playerIndex * (currentBoard.layerLength));
+        diceElement.style.boxShadow = `0 0 10px ${player.color}`;
+        const pivotIndex = player.outputIndex;
         const pivotPoint = pathPoints[pivotIndex];
         // set die position
         const factor = 1.25;
@@ -161,6 +161,9 @@ function updateDiceLocation(resetFace) {
 
 // Move to next player's turn
 function nextTurn() {
+    // test that board data and display data are in sync
+    testBoardAndDisplaySync();
+    
     // remove auto button if last player
     const autoButton = document.getElementById('auto-container');
     currentBoard.diceRolled && currentBoard.currentPlayerIndex == currentBoard.numPlayers - 1 && (autoButton.style.display = 'none');
@@ -191,11 +194,16 @@ function nextTurn() {
 
 window.onload = function() {
     // Initialize the game
+    calcPathPoints();
     initGame();
     resetGame();
+    
+    // test that board data and display data are in sync
+    testBoardAndDisplaySync();
     
     // Force a resize to ensure everything is sized correctly
     setTimeout(() => {
         window.dispatchEvent(new Event('resize'));
     }, 100);
 };
+

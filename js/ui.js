@@ -79,7 +79,6 @@ function createPlayerControls() {
     // Add autoMover button
     createAutoButton();
 }
-let playerControls;
 
 function createDiceElement() {
     const diceContainer = document.createElement('div');
@@ -135,8 +134,8 @@ function drawPlayerDots(player, shiftXlist=0, shiftYlist=0) {
 
         if (dot.inStartingArea) {
             canvasPoint = {
-                x: dot.startPositions[dot.startingPosition].x,
-                y: dot.startPositions[dot.startingPosition].y
+                x: dot.startPosition.x,
+                y: dot.startPosition.y
             };
         } else if (dot.inHomePath) {
             canvasPoint = dot.homePathPosition;
@@ -167,8 +166,8 @@ function isPointInDot(x, y, dot) {
     
     if (dot.inStartingArea) {
         // Get position from starting positions
-        dotPosX = dot.startPositions[dot.startingPosition].x;
-        dotPosY = dot.startPositions[dot.startingPosition].y;
+        dotPosX = dot.startPosition.x;
+        dotPosY = dot.startPosition.y;
     } else if (dot.inHomePath) {
         // Get position from home path
         dotPosX = dot.homePathPosition.x;
