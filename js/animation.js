@@ -72,9 +72,10 @@ function handleDiceClick() {
 
             // Get moveable dots for current player
             moveableDots = getMoveableDots(currentPlayerCanvas, rollResult)
-            autoMoveDot = (2 > moveableDots.length)
-                || moveableDots.every(dot => dot.index === moveableDots[0].index) // auto move if all possible moves are the same
-                || isAutoMover
+            // auto move if all possible moves are the same, or if the player is an auto mover
+            // moving out of starting area is considered the same move
+            autoMoveDot = isAutoMover || (2 > moveableDots.length)
+                || moveableDots.every(dot => (dot.inHomePath === moveableDots[0].inHomePath) && (dot.inHomePath ? (dot.stepsToHome === moveableDots[0].stepsToHome) : (dot.index === moveableDots[0].index)))
             
             // Reset dice appearance after showing result
             setTimeout(() => {
