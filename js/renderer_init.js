@@ -27,51 +27,43 @@ container.appendChild(bgCanvas);
 
 // Create title overlay on the canvas
 const gameTitle = document.createElement('div');
-gameTitle.textContent = 'Ludo';
-gameTitle.style.position = 'absolute';
+gameTitle.classList.add('background-text');
+gameTitle.textContent = 'qLudo';
 gameTitle.style.top = '6px';
-gameTitle.style.left = '0';
-gameTitle.style.width = 'auto';
-gameTitle.style.textAlign = 'left';
+gameTitle.style.left = '0px';
 gameTitle.style.fontSize = '36px';
-gameTitle.style.fontWeight = 'bold';
-gameTitle.style.color = '#333';
-gameTitle.style.textShadow = '2px 2px 4px rgba(255, 255, 255, 0.7)';
+// gameTitle.style.textShadow = '2px 2px 4px rgba(255, 255, 255, 0.7)';
 gameTitle.style.pointerEvents = 'auto'; // Allow clicks
-gameTitle.style.zIndex = '100'; // Ensure it's on top
 container.appendChild(gameTitle);
 
 // Add click event to toggle full screen mode
 gameTitle.addEventListener('click', () => {
     console.debug('Toggling full screen mode');
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            console.warn(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-        });
+    if (currentBoard.gameEnded) {
+        resetGame();
     } else {
-        document.exitFullscreen();
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.warn(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+        // redraw everything after resizing
+        updateDimensions();
+        updateVisualElements();
+        currentBoard.players.forEach(drawPlayerDots);
     }
-    // redraw everything after resizing
-    updateDimensions();
-    updateVisualElements();
-    currentBoard.players.forEach(player => drawPlayerDots(player));
-    if (currentBoard.gameEnded) {resetGame();}
 });
 
 // Create scoreboard below the title
 const scoreBoard = document.createElement('div');
+scoreBoard.classList.add('background-text');
 scoreBoard.id = 'score-board';
-scoreBoard.style.position = 'absolute';
 scoreBoard.style.top = '50px';
 scoreBoard.style.left = '0';
-scoreBoard.style.width = 'auto';
-scoreBoard.style.textAlign = 'left';
 scoreBoard.style.fontSize = '24px';
-scoreBoard.style.fontWeight = 'bold';
-scoreBoard.style.color = '#333';
-scoreBoard.style.textShadow = '2px 2px 4px rgba(255, 255, 255, 0.7)';
 scoreBoard.style.pointerEvents = 'none'; // Prevent clicks
-scoreBoard.style.zIndex = '100'; // Ensure it's on top
 container.appendChild(scoreBoard);
 
 // Create UI elements

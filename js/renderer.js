@@ -305,11 +305,16 @@ function updateDimensions() {
         // Update controls position and size
         playerControls.container.style.top = `${baseUnit * 0.8}px`;
         playerControls.container.style.right = `${baseUnit * 0.8}px`;
-        playerControls.display.style.fontSize = `${baseUnit * 2}px`;
-        playerControls.upButton.style.width = `${baseUnit * 2.5}px`;
-        playerControls.upButton.style.height = `${baseUnit * 2.5}px`;
-        playerControls.downButton.style.width = `${baseUnit * 2.5}px`;
-        playerControls.downButton.style.height = `${baseUnit * 2.5}px`;
+        playerControls.playerCountDisplay.style.fontSize = `${baseUnit * 2}px`;
+        playerControls.upPlayerButton.style.width = `${baseUnit * 2.5}px`;
+        playerControls.upPlayerButton.style.height = `${baseUnit * 2.5}px`;
+        playerControls.downPlayerButton.style.width = `${baseUnit * 2.5}px`;
+        playerControls.downPlayerButton.style.height = `${baseUnit * 2.5}px`;
+        playerControls.bosonCountDisplay.style.fontSize = `${baseUnit * 2}px`;
+        playerControls.upBosonButton.style.width = `${baseUnit * 2.5}px`;
+        playerControls.upBosonButton.style.height = `${baseUnit * 2.5}px`;
+        playerControls.downBosonButton.style.width = `${baseUnit * 2.5}px`;
+        playerControls.downBosonButton.style.height = `${baseUnit * 2.5}px`;
     }
 
     // Update dice size if it exists

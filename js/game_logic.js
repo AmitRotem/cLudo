@@ -156,10 +156,12 @@ function checkWinCondition(player) {
     const playerCanvas = player.display;
     const allHome = playerCanvas.dots.every(dot => dot.reachedHome);
     if (allHome) {
-        updateGameInfo(`🎉 ${player.name} has won the game! 🎉`);
+        updateGameInfo(`🎉 ${player.name} has won the game! 🎉     click title to reset.`);
         playSound('win');
         currentBoard.gameEnded = true;
-        // You can add additional victory celebration here
+        window.dispatchEvent(new Event('resize'));
+        animateMoveableDots(player, 0, true)
+
         return true;
     } else {
         nextTurn();
@@ -264,7 +266,7 @@ function autoMove() {
             if (dotsGettingToSafeZone[i]) {moveScore[i] += 1} // move to safe zone
             if (dotsGettingHome[i]      ) {moveScore[i] += 2} // move home
             if (dotsInStartingArea[i]   ) {moveScore[i] += 4} // move out of starting area
-            if (dotsColliding[i]        ) {moveScore[i] -= 0} //
+            if (dotsColliding[i]        ) {moveScore[i] -= 0.1} //
             moveScore[i] += Math.random() * 0.01; // add some randomness
         }
     } else if ("Human" == playerType) { // random

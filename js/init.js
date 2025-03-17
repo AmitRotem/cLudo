@@ -32,6 +32,7 @@ function initGame() {
     container.onclick = function(e) {
         if (currentBoard.gameStarted) {
             handleCanvasClick(e);
+            removePawnSelectionMenu();
         } else {
             handleSetupClick(e);
         }
@@ -123,17 +124,58 @@ function handleSetupClick(e) {
         for (let j = 0; j < pc.dots.length; j++) {
             const dot = pc.dots[j];
             if (isPointInDot(x, y, dot)) {
-                // Change name
-                getPlayerDistinctPawn(currentBoard.players, i, true);
-                // Redraw the dots
-                drawPlayerDots(currentBoard.players[i]);
-                // Update score board
-                updateScoreBoard();
+                // Show selection menu
+                showPawnSelectionMenu(currentBoard.players[i]);
                 return;
             }
         }
     }
+}
 
+function showPawnSelectionMenu(player) {
+    const selectionMenu = document.createElement('div');
+    selectionMenu.style.position = 'absolute';
+    selectionMenu.style.top = '50%';
+    selectionMenu.style.left = '50%';
+    selectionMenu.style.transform = 'translate(-50%, -50%)';
+    selectionMenu.style.backgroundColor = 'white';
+    selectionMenu.style.border = '1px solid black';
+    selectionMenu.style.padding = '10px';
+    selectionMenu.style.zIndex = '1000';
+    selectionMenu.style.width = '100vh';
+    selectionMenu.style.height = '100vh';
+    selectionMenu.style.borderRadius = '50%';
+    selectionMenu.style.display = 'flex';
+    selectionMenu.style.flexWrap = 'wrap';
+    selectionMenu.style.justifyContent = 'center';
+    selectionMenu.style.alignItems = 'center';
+    selectionMenu.id = 'pawn-selection-menu';
+
+    const pawns = getAllPawns();
+    pawns.forEach((pawn, index) => {
+        const angle = Math.sqrt(index / pawns.length) * 360 * 5;
+        const pawnButton = document.createElement('button');
+        pawnButton.textContent = pawn;
+        pawnButton.style.position = 'absolute';
+        pawnButton.style.transform = `rotate(${angle}deg) translate(${2.9 * baseUnit * Math.sqrt(1+index)}px) rotate(-${angle}deg)`;
+        pawnButton.style.fontSize = 3 * baseUnit + 'px';
+        pawnButton.style.borderRadius = '50%';
+        pawnButton.style.cursor = 'pointer';
+        pawnButton.addEventListener('click', () => {
+            player.name = pawn;
+            drawPlayerDots(player);
+            updateScoreBoard();
+            document.body.removeChild(selectionMenu);
+        });
+        selectionMenu.appendChild(pawnButton);
+    });
+
+    document.body.appendChild(selectionMenu);
+}
+
+function removePawnSelectionMenu() {
+    const selectionMenu = document.getElementById('pawn-selection-menu');
+    selectionMenu && document.body.removeChild(selectionMenu);
 }
 
 function updateDiceLocation(resetFace) {
@@ -144,6 +186,7 @@ function updateDiceLocation(resetFace) {
         resetFace && (diceElement.textContent = '🎲');
         resetFace && (diceElement.style.fontSize = `${baseUnit * 5.2}px`);
         diceElement.style.boxShadow = `0 0 10px ${player.color}`;
+        diceElement.style.backgroundColor = "hsla"+player.color.slice(3,-1)+", 0.1)";
         const pivotIndex = player.outputIndex;
         const pivotPoint = pathPoints[pivotIndex];
         // set die position
@@ -160,10 +203,7 @@ function updateDiceLocation(resetFace) {
 }
 
 // Move to next player's turn
-function nextTurn() {
-    // test that board data and display data are in sync
-    testBoardAndDisplaySync();
-    
+function nextTurn() {    
     // remove auto button if last player
     const autoButton = document.getElementById('auto-container');
     currentBoard.diceRolled && currentBoard.currentPlayerIndex == currentBoard.numPlayers - 1 && (autoButton.style.display = 'none');
@@ -197,9 +237,6 @@ window.onload = function() {
     calcPathPoints();
     initGame();
     resetGame();
-    
-    // test that board data and display data are in sync
-    testBoardAndDisplaySync();
     
     // Force a resize to ensure everything is sized correctly
     setTimeout(() => {

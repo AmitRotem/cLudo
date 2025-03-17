@@ -8,51 +8,60 @@ function createPlayerControls() {
     controlsContainer.style.top = `${baseUnit * 0.8}px`;
     controlsContainer.style.right = `${baseUnit * 0.8}px`;
     controlsContainer.style.display = 'flex';
-    controlsContainer.style.flexDirection = 'row';
+    controlsContainer.style.flexDirection = 'column';
     controlsContainer.style.alignItems = 'center';
     controlsContainer.style.zIndex = '100';
     container.appendChild(controlsContainer);
 
+    // Player count controls
+    const playerCountContainer = document.createElement('div');
+    playerCountContainer.style.display = 'flex';
+    playerCountContainer.style.flexDirection = 'row';
+    playerCountContainer.style.alignItems = 'center';
+    playerCountContainer.style.marginBottom = `${baseUnit * 1.5}px`;
+    controlsContainer.appendChild(playerCountContainer);
+
     const playerCountDisplay = document.createElement('div');
+    playerCountDisplay.classList.add('background-text');
+    playerCountDisplay.style.position = 'relative';
     playerCountDisplay.style.fontSize = `${baseUnit * 2}px`;
     playerCountDisplay.style.fontWeight = 'bold';
     playerCountDisplay.style.marginRight = `${baseUnit * 0.8}px`;
-    playerCountDisplay.style.color = '#333';
     playerCountDisplay.textContent = currentBoard.numPlayers.toString();
-    controlsContainer.appendChild(playerCountDisplay);
+    playerCountContainer.appendChild(playerCountDisplay);
 
-    const buttonContainer = document.createElement('div');
-    buttonContainer.style.display = 'flex';
-    buttonContainer.style.flexDirection = 'column';
-    controlsContainer.appendChild(buttonContainer);
+    const playerButtonContainer = document.createElement('div');
+    playerButtonContainer.style.display = 'flex';
+    playerButtonContainer.style.flexDirection = 'column';
+    playerCountContainer.appendChild(playerButtonContainer);
 
-    const upButton = document.createElement('button');
-    upButton.textContent = '▲';
-    upButton.style.width = `${baseUnit * 2.5}px`;
-    upButton.style.height = `${baseUnit * 2.5}px`;
-    upButton.style.fontSize = `${baseUnit * 1}px`;
-    upButton.style.marginBottom = `${baseUnit * 0.3}px`;
-    upButton.style.cursor = 'pointer';
-    upButton.style.backgroundColor = 'hsl(122, 39%, 49%)'; // up button color
-    upButton.style.color = 'white';
-    upButton.style.border = 'none';
-    upButton.style.borderRadius = `${baseUnit * 0.5}px`;
-    buttonContainer.appendChild(upButton);
+    const upPlayerButton = document.createElement('button');
+    upPlayerButton.textContent = '▲';
+    upPlayerButton.style.width = `${baseUnit * 2.5}px`;
+    upPlayerButton.style.height = `${baseUnit * 2.5}px`;
+    upPlayerButton.style.fontSize = `${baseUnit * 1}px`;
+    upPlayerButton.style.marginBottom = `${baseUnit * 0.3}px`;
+    upPlayerButton.style.cursor = 'pointer';
+    upPlayerButton.style.backgroundColor = 'hsl(122, 39%, 49%)'; // up button color
+    upPlayerButton.style.color = 'white';
+    upPlayerButton.style.border = 'none';
+    upPlayerButton.style.borderRadius = `${baseUnit * 0.5}px`;
+    playerButtonContainer.appendChild(upPlayerButton);
 
-    const downButton = document.createElement('button');
-    downButton.textContent = '▼';
-    downButton.style.width = `${baseUnit * 2.5}px`;
-    downButton.style.height = `${baseUnit * 2.5}px`;
-    downButton.style.fontSize = `${baseUnit * 1}px`;
-    downButton.style.cursor = 'pointer';
-    downButton.style.backgroundColor = 'hsl(4, 90%, 58%)'; // down button color
-    downButton.style.color = 'white';
-    downButton.style.border = 'none';
-    downButton.style.borderRadius = `${baseUnit * 0.5}px`;
-    buttonContainer.appendChild(downButton);
+    const downPlayerButton = document.createElement('button');
+    downPlayerButton.textContent = '▼';
+    downPlayerButton.style.width = `${baseUnit * 2.5}px`;
+    downPlayerButton.style.height = `${baseUnit * 2.5}px`;
+    downPlayerButton.style.fontSize = `${baseUnit * 1}px`;
+    downPlayerButton.style.cursor = 'pointer';
+    downPlayerButton.style.backgroundColor = 'hsl(4, 90%, 58%)'; // down button color
+    downPlayerButton.style.color = 'white';
+    downPlayerButton.style.border = 'none';
+    downPlayerButton.style.borderRadius = `${baseUnit * 0.5}px`;
+    playerButtonContainer.appendChild(downPlayerButton);
 
-    upButton.addEventListener('click', () => {
-        console.debug('up button clicked');
+    upPlayerButton.addEventListener('click', () => {
+        console.debug('up player button clicked');
         if (currentBoard.numPlayers < 10) {
             currentBoard.numPlayers++;
         }
@@ -60,8 +69,8 @@ function createPlayerControls() {
         resetGame();
     });
 
-    downButton.addEventListener('click', () => {
-        console.debug('down button clicked');
+    downPlayerButton.addEventListener('click', () => {
+        console.debug('down player button clicked');
         if (currentBoard.numPlayers > 1) {
             currentBoard.numPlayers--;
         }
@@ -69,11 +78,78 @@ function createPlayerControls() {
         resetGame();
     });
 
+    // Boson count controls
+    const bosonCountContainer = document.createElement('div');
+    bosonCountContainer.style.display = 'flex';
+    bosonCountContainer.style.flexDirection = 'row';
+    bosonCountContainer.style.alignItems = 'center';
+    controlsContainer.appendChild(bosonCountContainer);
+
+    const bosonCountDisplay = document.createElement('div');
+    bosonCountDisplay.classList.add('background-text');
+    bosonCountDisplay.style.position = 'relative';
+    bosonCountDisplay.style.fontSize = `${baseUnit * 2}px`;
+    bosonCountDisplay.style.fontWeight = 'bold';
+    bosonCountDisplay.style.marginRight = `${baseUnit * 0.8}px`;
+    bosonCountDisplay.textContent = currentBoard.numBosons.toString();
+    bosonCountContainer.appendChild(bosonCountDisplay);
+
+    const bosonButtonContainer = document.createElement('div');
+    bosonButtonContainer.style.display = 'flex';
+    bosonButtonContainer.style.flexDirection = 'column';
+    bosonCountContainer.appendChild(bosonButtonContainer);
+
+    const upBosonButton = document.createElement('button');
+    upBosonButton.textContent = '▲';
+    upBosonButton.style.width = `${baseUnit * 2.5}px`;
+    upBosonButton.style.height = `${baseUnit * 2.5}px`;
+    upBosonButton.style.fontSize = `${baseUnit * 1}px`;
+    upBosonButton.style.marginBottom = `${baseUnit * 0.3}px`;
+    upBosonButton.style.cursor = 'pointer';
+    upBosonButton.style.backgroundColor = 'hsl(122, 39%, 49%)'; // up button color
+    upBosonButton.style.color = 'white';
+    upBosonButton.style.border = 'none';
+    upBosonButton.style.borderRadius = `${baseUnit * 0.5}px`;
+    bosonButtonContainer.appendChild(upBosonButton);
+
+    const downBosonButton = document.createElement('button');
+    downBosonButton.textContent = '▼';
+    downBosonButton.style.width = `${baseUnit * 2.5}px`;
+    downBosonButton.style.height = `${baseUnit * 2.5}px`;
+    downBosonButton.style.fontSize = `${baseUnit * 1}px`;
+    downBosonButton.style.cursor = 'pointer';
+    downBosonButton.style.backgroundColor = 'hsl(4, 90%, 58%)'; // down button color
+    downBosonButton.style.color = 'white';
+    downBosonButton.style.border = 'none';
+    downBosonButton.style.borderRadius = `${baseUnit * 0.5}px`;
+    bosonButtonContainer.appendChild(downBosonButton);
+
+    upBosonButton.addEventListener('click', () => {
+        console.debug('up boson button clicked');
+        if (currentBoard.numBosons < 4) {
+            currentBoard.numBosons++;
+        }
+        bosonCountDisplay.textContent = currentBoard.numBosons.toString();
+        resetGame();
+    });
+
+    downBosonButton.addEventListener('click', () => {
+        console.debug('down boson button clicked');
+        if (currentBoard.numBosons > 1) {
+            currentBoard.numBosons--;
+        }
+        bosonCountDisplay.textContent = currentBoard.numBosons.toString();
+        resetGame();
+    });
+
     playerControls = {
         container: controlsContainer,
-        display: playerCountDisplay,
-        upButton: upButton,
-        downButton: downButton
+        playerCountDisplay: playerCountDisplay,
+        upPlayerButton: upPlayerButton,
+        downPlayerButton: downPlayerButton,
+        bosonCountDisplay: bosonCountDisplay,
+        upBosonButton: upBosonButton,
+        downBosonButton: downBosonButton
     };
 
     // Add autoMover button
@@ -82,22 +158,8 @@ function createPlayerControls() {
 
 function createDiceElement() {
     const diceContainer = document.createElement('div');
+    diceContainer.classList.add('dice');
     diceContainer.id = 'dice-container';
-    diceContainer.style.position = 'absolute';
-    diceContainer.style.backgroundColor = 'hsla(0, 0%, 50%, 0.10)'; // dice background color
-    diceContainer.style.width = `${baseUnit * 6}px`;
-    diceContainer.style.height = `${baseUnit * 6}px`;
-    // diceContainer.style.top = `${baseUnit * 6}px`;
-    // diceContainer.style.left = `${baseUnit * 6}px`;
-    diceContainer.style.fontSize = `${baseUnit * 5.2}px`;
-    diceContainer.style.borderRadius = `${baseUnit * 0.8}px`;
-    diceContainer.style.boxShadow = '0 0 10px rgba(0,0,0,0.3)';
-    diceContainer.style.display = 'flex';
-    diceContainer.style.justifyContent = 'center';
-    diceContainer.style.alignItems = 'center';
-    diceContainer.style.cursor = 'pointer';
-    diceContainer.style.zIndex = '200';
-    diceContainer.style.transition = 'transform 0.1s ease';
     diceContainer.textContent = '🎲';
 
     diceContainer.addEventListener('mouseover', () => {
@@ -133,12 +195,12 @@ function drawPlayerDots(player, shiftXlist=0, shiftYlist=0) {
         let canvasPoint;
 
         if (dot.inStartingArea) {
-            canvasPoint = {
-                x: dot.startPosition.x,
-                y: dot.startPosition.y
-            };
+            canvasPoint = dot.startPosition;
         } else if (dot.inHomePath) {
-            canvasPoint = dot.homePathPosition;
+            canvasPoint = {
+                x: dot.homePathPosition.x + (dot.reachedHome==true) * 2 * baseUnit * Math.cos((0.5 + index) / player.numBosons * 2 * Math.PI),
+                y: dot.homePathPosition.y + (dot.reachedHome==true) * 2 * baseUnit * Math.sin((0.5 + index) / player.numBosons * 2 * Math.PI)
+            };
         } else if (dot.moving && dot.interpolation !== undefined) {
             canvasPoint = pathToCanvas(dot.interpolation);
         } else {
@@ -187,7 +249,10 @@ function isPointInDot(x, y, dot) {
 
 // Function to reset the game when player count changes
 function resetGame() {
-    currentBoard = createBoard(currentBoard.numPlayers);
+    // Remove pawn selection menu if it exists
+    removePawnSelectionMenu();
+    // Create new board
+    currentBoard = createBoard(currentBoard.numPlayers, {numBosons: currentBoard.numBosons});
     
     // Update canvas references
     while (container.children.length > 1) {
@@ -224,6 +289,7 @@ function resetGame() {
     // Recalculate path points
     calcPathPoints();
     
+
     // Redraw everything
     drawCurves();
     initializeDots();
@@ -248,6 +314,9 @@ function resetGame() {
     
     // Reset game info
     updateGameInfo(`${currentBoard.players[currentBoard.currentPlayerIndex].name}'s turn! Click the dice to roll.`);
+
+    // force redraw
+    window.dispatchEvent(new Event('resize'));
 }
 
 function createAutoButton() {

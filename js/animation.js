@@ -180,7 +180,7 @@ function moveAlongHomePath(player, dotIndex, steps, onComplete) {
     const startTime = performance.now();
     
     updateGameInfo(`${player.name}'s dot is moving along home path...`);
-    
+
     function animateStep(timestamp) {
         const elapsed = timestamp - startTime;
         const progress = Math.min(elapsed / duration, 1);
@@ -372,9 +372,13 @@ function moveToHomePathEntry(player, dotIndex, remainingSteps, onComplete) {
 }
 
 
-function animateMoveableDots(player, moveAmount) {
-    const whoCanMove = checkWhoCanMove(player, moveAmount);
-    const moveableDots = player.display.dots.filter((_, i) => whoCanMove[i]);
+function animateMoveableDots(player, moveAmount, animateAll = false) {
+    let whoCanMove = Array.from({length: player.numBosons}, (_, i) => true);
+    let moveableDots = player.display.dots;
+    if (!animateAll) {
+        whoCanMove = checkWhoCanMove(player, moveAmount);
+        moveableDots = player.display.dots.filter((_, i) => whoCanMove[i]);
+    };
     moveableDots.forEach(dot => {
         dot.moving = true;
     });
