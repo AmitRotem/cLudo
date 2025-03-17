@@ -126,7 +126,7 @@ function createPlayerControls() {
 
     upBosonButton.addEventListener('click', () => {
         console.debug('up boson button clicked');
-        if (currentBoard.numBosons < 4) {
+        if (currentBoard.numBosons < 9) {
             currentBoard.numBosons++;
         }
         bosonCountDisplay.textContent = currentBoard.numBosons.toString();
@@ -338,7 +338,7 @@ function createAutoButton() {
     autoButton.addEventListener('click', () => {
         console.debug('Auto button clicked');
         currentBoard.players[currentBoard.currentPlayerIndex].autoMove = true;
-        currentBoard.players[currentBoard.currentPlayerIndex].style = "Naive";
+        currentBoard.players[currentBoard.currentPlayerIndex].style = ['Naive', 'Angry', 'Nice'][Math.floor(Math.random() * 3)];
         console.log(`Player ${currentBoard.currentPlayerIndex} is now an auto mover`);
         handleDiceClick();
     });

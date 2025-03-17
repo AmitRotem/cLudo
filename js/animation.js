@@ -25,9 +25,9 @@ function playSound(sound) {
 function handleDiceClick() {
     console.debug("die clicked");
     currentBoard.gameStarted = true;
-    // Prevent multiple rolls in one turn
-    if (currentBoard.diceRolled || currentBoard.animating) return;
     fadeOut(playerControls.container);
+    // Prevent multiple rolls in one turn
+    if (currentBoard.diceRolled || currentBoard.animating) {updateGameInfo("Please wait for the current move to complete!"); return;}
     const player = currentBoard.players[currentBoard.currentPlayerIndex];
     const playerCanvas = player.display;    
     const diceElement = document.getElementById('dice-container');
@@ -220,8 +220,8 @@ function moveAlongHomePath(player, dotIndex, steps, onComplete) {
 
 // Animate teleporting from starting area to path entry point
 function animateDotTeleport(player, dotIndex, targetPosition, OnComplete) {
-    const playerCanvas = player.display;
     console.debug("animateDotTeleport");
+    const playerCanvas = player.display;
     const dot = playerCanvas.dots[dotIndex];
     dot.moving = true;
     currentBoard.animating = true;

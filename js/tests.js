@@ -22,46 +22,16 @@ function testDice(N = 2**14) {
 function test1() {
     testMode = !testMode;
     console.log(`Test mode: ${testMode}`);
-    return testMode;
+    return null;
 }
 
 function test2() {
     currentBoard.players.forEach(player => {
         player.autoMove = true;
-        player.style = "Naive";
+        player.style = ['Naive', 'Angry', 'Nice'][Math.floor(Math.random() * 3)];
     });
     console.log(`Test mode 2: auto play on`);
     handleDiceClick();
+    return null;
 }
 
-
-function testPlayerAndDisplaySync(player) {
-    const dots = player.display.dots;
-    // numBosons
-    console.assert(dots.length === player.numBosons, player, `number of dots is incompatible with numBosons!! got ${dots.length} expected ${player.numBosons}`);
-
-    // inStartingArea
-    console.assert(dots.every((dot,j) => (dot.inStartingArea ? (player.locations[j].im < 0) : (player.locations[j].im>=0))), player, `inStartingArea is incompatible with locations!! dots have ${dots.map(dot => dot.inStartingArea)} but locations are ${player.locations.map(location => location.im)}`);
-
-    // index
-    console.assert(dots.every((dot,j) => (dot.inStartingArea ? true : (dot.index === player.locations[j].re))), player, `index is incompatible with locations!! dots have ${dots.map(dot => dot.index)} but locations are ${player.locations.map(location => location.re)}`);
-
-    // inHomePath
-    console.assert(dots.every((dot,j) => (dot.inHomePath ? (player.locations[j].im === dot.homePathStep) : (player.locations[j].im <= 0))), player, `homePathStep is incompatible with locations!! dots have ${dots.map(dot => dot.inHomePath)} with steps ${dots.map(dot => dot.homePathStep)} but locations are ${player.locations.map(location => location.im)}`);
-    
-
-
-    /// if in home path;
-    // stepsToHome # Int
-
-    // player.state
-    // player.patterns
-    // player.bosonsInPlay # calc from locations ?
-    // player.finishedBosons # calc from locations ?
-}
-
-function testBoardAndDisplaySync() {
-    console.assert(currentBoard.players.length === currentBoard.numPlayers, currentBoard, `number of players is incompatible with numPlayers!! got ${currentBoard.players.length} expected ${currentBoard.numPlayers}`);
-    console.assert(currentBoard.players.every(player => player.dieSize === currentBoard.dieSize), currentBoard, `dieSize is incompatible with currentBoard.dieSize!! got ${currentBoard.players.map(player => player.dieSize)} expected ${currentBoard.dieSize}`);
-    currentBoard.players.map(testPlayerAndDisplaySync);
-}
