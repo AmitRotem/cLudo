@@ -18,15 +18,15 @@ function createPlayerControls() {
     playerCountContainer.style.display = 'flex';
     playerCountContainer.style.flexDirection = 'row';
     playerCountContainer.style.alignItems = 'center';
-    playerCountContainer.style.marginBottom = `${baseUnit * 1.5}px`;
+    playerCountContainer.style.marginBottom = 1.5 * baseUnit + 'px';
     controlsContainer.appendChild(playerCountContainer);
 
     const playerCountDisplay = document.createElement('div');
     playerCountDisplay.classList.add('background-text');
     playerCountDisplay.style.position = 'relative';
-    playerCountDisplay.style.fontSize = `${baseUnit * 2}px`;
+    playerCountDisplay.style.fontSize = 2 * baseUnit + 'px';
     playerCountDisplay.style.fontWeight = 'bold';
-    playerCountDisplay.style.marginRight = `${baseUnit * 0.8}px`;
+    playerCountDisplay.style.marginRight = 0.8 * baseUnit + 'px';
     playerCountDisplay.textContent = currentBoard.numPlayers.toString();
     playerCountContainer.appendChild(playerCountDisplay);
 
@@ -37,27 +37,27 @@ function createPlayerControls() {
 
     const upPlayerButton = document.createElement('button');
     upPlayerButton.textContent = '▲';
-    upPlayerButton.style.width = `${baseUnit * 2.5}px`;
-    upPlayerButton.style.height = `${baseUnit * 2.5}px`;
-    upPlayerButton.style.fontSize = `${baseUnit * 1}px`;
-    upPlayerButton.style.marginBottom = `${baseUnit * 0.3}px`;
+    upPlayerButton.style.width = 2.5 * baseUnit + 'px';
+    upPlayerButton.style.height = 2.5 * baseUnit + 'px';
+    upPlayerButton.style.fontSize = baseUnit + 'px';
+    upPlayerButton.style.marginBottom = 0.3 * baseUnit + 'px';
     upPlayerButton.style.cursor = 'pointer';
     upPlayerButton.style.backgroundColor = 'hsl(122, 39%, 49%)'; // up button color
     upPlayerButton.style.color = 'white';
     upPlayerButton.style.border = 'none';
-    upPlayerButton.style.borderRadius = `${baseUnit * 0.5}px`;
+    upPlayerButton.style.borderRadius = 0.5 * baseUnit + 'px';
     playerButtonContainer.appendChild(upPlayerButton);
 
     const downPlayerButton = document.createElement('button');
     downPlayerButton.textContent = '▼';
-    downPlayerButton.style.width = `${baseUnit * 2.5}px`;
-    downPlayerButton.style.height = `${baseUnit * 2.5}px`;
-    downPlayerButton.style.fontSize = `${baseUnit * 1}px`;
+    downPlayerButton.style.width = 2.5 * baseUnit + 'px';
+    downPlayerButton.style.height = 2.5 * baseUnit + 'px';
+    downPlayerButton.style.fontSize = 1 * baseUnit + 'px';
     downPlayerButton.style.cursor = 'pointer';
     downPlayerButton.style.backgroundColor = 'hsl(4, 90%, 58%)'; // down button color
     downPlayerButton.style.color = 'white';
     downPlayerButton.style.border = 'none';
-    downPlayerButton.style.borderRadius = `${baseUnit * 0.5}px`;
+    downPlayerButton.style.borderRadius = 0.5 * baseUnit + 'px';
     playerButtonContainer.appendChild(downPlayerButton);
 
     upPlayerButton.addEventListener('click', () => {
@@ -88,9 +88,9 @@ function createPlayerControls() {
     const bosonCountDisplay = document.createElement('div');
     bosonCountDisplay.classList.add('background-text');
     bosonCountDisplay.style.position = 'relative';
-    bosonCountDisplay.style.fontSize = `${baseUnit * 2}px`;
+    bosonCountDisplay.style.fontSize = 2 * baseUnit + 'px';
     bosonCountDisplay.style.fontWeight = 'bold';
-    bosonCountDisplay.style.marginRight = `${baseUnit * 0.8}px`;
+    bosonCountDisplay.style.marginRight = 0.8 * baseUnit + 'px';
     bosonCountDisplay.textContent = currentBoard.numBosons.toString();
     bosonCountContainer.appendChild(bosonCountDisplay);
 
@@ -101,27 +101,27 @@ function createPlayerControls() {
 
     const upBosonButton = document.createElement('button');
     upBosonButton.textContent = '▲';
-    upBosonButton.style.width = `${baseUnit * 2.5}px`;
-    upBosonButton.style.height = `${baseUnit * 2.5}px`;
-    upBosonButton.style.fontSize = `${baseUnit * 1}px`;
-    upBosonButton.style.marginBottom = `${baseUnit * 0.3}px`;
+    upBosonButton.style.width = 2.5 * baseUnit + 'px';
+    upBosonButton.style.height = 2.5 * baseUnit + 'px';
+    upBosonButton.style.fontSize = 1 * baseUnit + 'px';
+    upBosonButton.style.marginBottom = 0.3 * baseUnit + 'px';
     upBosonButton.style.cursor = 'pointer';
     upBosonButton.style.backgroundColor = 'hsl(122, 39%, 49%)'; // up button color
     upBosonButton.style.color = 'white';
     upBosonButton.style.border = 'none';
-    upBosonButton.style.borderRadius = `${baseUnit * 0.5}px`;
+    upBosonButton.style.borderRadius = 0.5 * baseUnit + 'px';
     bosonButtonContainer.appendChild(upBosonButton);
 
     const downBosonButton = document.createElement('button');
     downBosonButton.textContent = '▼';
-    downBosonButton.style.width = `${baseUnit * 2.5}px`;
-    downBosonButton.style.height = `${baseUnit * 2.5}px`;
-    downBosonButton.style.fontSize = `${baseUnit * 1}px`;
+    downBosonButton.style.width = 2.5 * baseUnit + 'px';
+    downBosonButton.style.height = 2.5 * baseUnit + 'px';
+    downBosonButton.style.fontSize = 1 * baseUnit + 'px';
     downBosonButton.style.cursor = 'pointer';
     downBosonButton.style.backgroundColor = 'hsl(4, 90%, 58%)'; // down button color
     downBosonButton.style.color = 'white';
     downBosonButton.style.border = 'none';
-    downBosonButton.style.borderRadius = `${baseUnit * 0.5}px`;
+    downBosonButton.style.borderRadius = 0.5 * baseUnit + 'px';
     bosonButtonContainer.appendChild(downBosonButton);
 
     upBosonButton.addEventListener('click', () => {
@@ -214,7 +214,7 @@ function drawPlayerDots(player, shiftXlist=0, shiftYlist=0) {
         player.color.split("(")[0] === "hsl" || error("Color should be in hsl format");
         playerCanvas.ctx.fillStyle = `hsla(${player.color.split("(")[1].split(")")[0]}, 0.3)`; // dot background color
         playerCanvas.ctx.fill();
-        playerCanvas.ctx.font = `${2.5 * baseUnit}px Arial`; // change emoji size
+        playerCanvas.ctx.font = `${2.5 * baseUnit}px 'Noto Color Emoji', sans-serif`; // change emoji size
         playerCanvas.ctx.textAlign = 'center';
         playerCanvas.ctx.textBaseline = 'middle';
         playerCanvas.ctx.fillStyle = 'white';

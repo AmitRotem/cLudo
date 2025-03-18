@@ -184,7 +184,7 @@ function updateDiceLocation(resetFace) {
     const player = currentBoard.players[playerIndex]
     if (diceElement) {        
         resetFace && (diceElement.textContent = '🎲');
-        resetFace && (diceElement.style.fontSize = `${baseUnit * 5.2}px`);
+        resetFace && (diceElement.style.fontSize = 5.2 * baseUnit + 'px');
         diceElement.style.boxShadow = `0 0 10px ${player.color}`;
         diceElement.style.backgroundColor = "hsla"+player.color.slice(3,-1)+", 0.1)";
         const pivotIndex = player.outputIndex;

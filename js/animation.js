@@ -37,7 +37,7 @@ function handleDiceClick() {
     // Get player color for highlighting dice
     const playerColor = player.color;
     diceElement.style.boxShadow = `0 0 15px ${playerColor}`;
-    diceElement.style.fontSize = `${baseUnit * 9}px`;
+    diceElement.style.fontSize = 9 * baseUnit + 'px';
 
     // Power roll
     const allDotsInStartingArea = playerCanvas.dots.every(dot => dot.inStartingArea);

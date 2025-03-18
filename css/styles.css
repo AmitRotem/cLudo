@@ -1,3 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+
+body {
+    font-family: 'Noto Color Emoji', sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: hsla(0, 2%, 28%, 0.15);
+    overflow: hidden;
+    box-sizing: border-box;
+    position: fixed; /* Prevents mobile bounce effects */
+    touch-action: none; /* Disables pinch zoom and other touch actions */
+}
+
+* {
+    font-family: inherit; /* Inherit font-family from body */
+    box-sizing: inherit;
+    -webkit-overflow-scrolling: none;
+    overflow: hidden;
+}
+
+html {
+    overflow: hidden;
+    height: 100%;
+}
+
 body::before {
     content: '|Ψ⟩';
     position: absolute;
@@ -33,32 +63,6 @@ body::before {
     color: #333;
     transition: transform 0.1s ease;
     z-index: 200;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: hsla(0, 2%, 28%, 0.15);
-    overflow: hidden;
-    box-sizing: border-box;
-    position: fixed; /* Prevents mobile bounce effects */
-    touch-action: none; /* Disables pinch zoom and other touch actions */
-}
-
-* {
-    box-sizing: inherit;
-    -webkit-overflow-scrolling: none;
-    overflow: hidden;
-}
-
-html {
-    overflow: hidden;
-    height: 100%;
 }
 
 h1 {

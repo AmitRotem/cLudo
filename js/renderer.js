@@ -146,7 +146,8 @@ function drawCurves(maxT = currentBoard.circuitLength) {
         bgCtx.stroke();
 
         bgCtx.lineWidth = 2;
-        bgCtx.font = `${2 * gridRadius}px Arial`;
+        // bgCtx.font = 2 * gridRadius + 'px Arial';
+        bgCtx.font = `${2 * gridRadius}px 'Noto Color Emoji', sans-serif`
         bgCtx.textAlign = 'center';
         bgCtx.textBaseline = 'middle';
         bgCtx.fillStyle = getPlayerColor(index, 100, 96, pathPoints.length); // main path color
@@ -189,7 +190,6 @@ function drawCurves(maxT = currentBoard.circuitLength) {
         // pivot location
         if (index % (currentBoard.layerLength) == 0) {
             bgCtx.fillStyle = 'black';
-            bgCtx.font = `{2 * gridRadius} Arial`;
             bgCtx.textAlign = 'center';
             bgCtx.textBaseline = 'middle';
             // bgCtx.fillText(index.toString(), canvasPoint.x, canvasPoint.y);
@@ -284,8 +284,8 @@ function updateDimensions() {
     gameInfo.style.width = 'auto';
     gameInfo.style.maxWidth = '100%';
     gameInfo.style.textAlign = 'left';
-    gameInfo.style.fontSize = `${baseUnit * 1.6}px`;
-    gameInfo.style.padding = `${baseUnit * 0.5}px ${baseUnit}px`;
+    gameInfo.style.fontSize = 1.6 * baseUnit + 'px';
+    gameInfo.style.padding = 0.5 * baseUnit + 'px ' + baseUnit + 'px';
     gameInfo.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'; // game info background color
     gameInfo.style.borderRadius = `${baseUnit * 0.5}px`;
     
@@ -303,29 +303,29 @@ function updateDimensions() {
     // Add this to your updateDimensions function
     if (playerControls) {
         // Update controls position and size
-        playerControls.container.style.top = `${baseUnit * 0.8}px`;
-        playerControls.container.style.right = `${baseUnit * 0.8}px`;
-        playerControls.playerCountDisplay.style.fontSize = `${baseUnit * 2}px`;
-        playerControls.upPlayerButton.style.width = `${baseUnit * 2.5}px`;
-        playerControls.upPlayerButton.style.height = `${baseUnit * 2.5}px`;
-        playerControls.downPlayerButton.style.width = `${baseUnit * 2.5}px`;
-        playerControls.downPlayerButton.style.height = `${baseUnit * 2.5}px`;
-        playerControls.bosonCountDisplay.style.fontSize = `${baseUnit * 2}px`;
-        playerControls.upBosonButton.style.width = `${baseUnit * 2.5}px`;
-        playerControls.upBosonButton.style.height = `${baseUnit * 2.5}px`;
-        playerControls.downBosonButton.style.width = `${baseUnit * 2.5}px`;
-        playerControls.downBosonButton.style.height = `${baseUnit * 2.5}px`;
+        playerControls.container.style.top = 0.8 * baseUnit + 'px';
+        playerControls.container.style.right = 0.8 * baseUnit + 'px';
+        playerControls.playerCountDisplay.style.fontSize = 2 * baseUnit + 'px';
+        playerControls.upPlayerButton.style.width = 2.5 * baseUnit + 'px';
+        playerControls.upPlayerButton.style.height = 2.5 * baseUnit + 'px';
+        playerControls.downPlayerButton.style.width = 2.5 * baseUnit + 'px';
+        playerControls.downPlayerButton.style.height = 2.5 * baseUnit + 'px';
+        playerControls.bosonCountDisplay.style.fontSize = 2 * baseUnit + 'px';
+        playerControls.upBosonButton.style.width = 2.5 * baseUnit + 'px';
+        playerControls.upBosonButton.style.height = 2.5 * baseUnit + 'px';
+        playerControls.downBosonButton.style.width = 2.5 * baseUnit + 'px';
+        playerControls.downBosonButton.style.height = 2.5 * baseUnit + 'px';
     }
 
     // Update dice size if it exists
     const diceElement = document.getElementById('dice-container');
     if (diceElement) {
-        diceElement.style.width = `${baseUnit * 6}px`;
-        diceElement.style.height = `${baseUnit * 6}px`;
-        // diceElement.style.top = `${baseUnit * 6}px`;
-        // diceElement.style.left = `${baseUnit * 6}px`;
-        diceElement.style.fontSize = `${baseUnit * 5.2}px`;
-        diceElement.style.borderRadius = `${baseUnit * 0.8}px`;
+        diceElement.style.width = 6 * baseUnit + 'px';
+        diceElement.style.height = 6 * baseUnit + 'px';
+        // diceElement.style.top = 6 * baseUnit + 'px';
+        // diceElement.style.left = 6 * baseUnit + 'px';
+        diceElement.style.fontSize = 5.2 * baseUnit + 'px';
+        diceElement.style.borderRadius = 0.8 * baseUnit + 'px';
     }
     updateDiceLocation(false);
 }
@@ -371,13 +371,9 @@ function updateVisualElements() {
         });
     });
     
-    // Also update strokeWidth and other visual parameters
-    const strokeWidth = baseUnit * 0.1;
-    const fontSize = baseUnit * 1;
-    
     // Update the title size and position
-    gameTitle.style.fontSize = `${baseUnit * 3.6}px`;
-    gameTitle.style.top = `${baseUnit * 2}px`;
+    gameTitle.style.fontSize = 3.6 * baseUnit + 'px';
+    gameTitle.style.top = 2 * baseUnit + 'px';
 }
 
 
