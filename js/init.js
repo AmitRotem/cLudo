@@ -24,9 +24,6 @@ function initGame() {
     
     // Create dice element
     createDiceElement();
-
-    // score board
-    // updateScoreBoard();
     
     // Set up click handler
     container.onclick = function(e) {
@@ -153,11 +150,11 @@ function showPawnSelectionMenu(player) {
 
     const pawns = getAllPawns();
     pawns.forEach((pawn, index) => {
-        const angle = Math.sqrt(index / pawns.length) * 360 * 5;
+        const angle = Math.sqrt(1 + index) * 200;
         const pawnButton = document.createElement('button');
         pawnButton.textContent = pawn;
         pawnButton.style.position = 'absolute';
-        pawnButton.style.transform = `rotate(${angle}deg) translate(${2.9 * baseUnit * Math.sqrt(1+index)}px) rotate(-${angle}deg)`;
+        pawnButton.style.transform = `rotate(${angle}deg) translate(${2.6 * baseUnit * Math.sqrt(1 + index)}px) rotate(-${angle}deg)`;
         pawnButton.style.fontSize = 3 * baseUnit + 'px';
         pawnButton.style.borderRadius = '50%';
         pawnButton.style.cursor = 'pointer';
@@ -237,7 +234,7 @@ window.onload = function() {
     calcPathPoints();
     initGame();
     resetGame();
-    
+
     // Force a resize to ensure everything is sized correctly
     setTimeout(() => {
         window.dispatchEvent(new Event('resize'));

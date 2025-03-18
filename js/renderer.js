@@ -4,12 +4,19 @@ function updateScoreBoard() {
     const scores = calcScore();
     let scoreText = '<br><br>Scores:<br>';
     currentBoard.players.forEach((player, index) => {
-        scoreText += `${player.name}: ${scores[index]}`;
+        // make the player emoji name colorful
+        scoreText += `<span style="font-family: 'Noto Color Emoji', sans-serif">`;
+        scoreText += player.name;
+        scoreText += `</span> : `
+        scoreText += scores[index]
         if (currentBoard.players[index].autoMove) {
             sufix = "  "
-            if ("Naive" == currentBoard.players[index].style) {sufix+='😇'};
-            if ("Angry" == currentBoard.players[index].style) {sufix+='😈'};
-            if ("Nice"  == currentBoard.players[index].style) {sufix+='😗'};
+            const NaE = ['😇']; // 🙃😊
+            const AnE = ['😈','👿'];
+            const NiE = ['🤔']; // 😏😎
+            if ("Naive" == currentBoard.players[index].style) {sufix+=NaE[Math.floor(NaE.length * Math.random())]};
+            if ("Angry" == currentBoard.players[index].style) {sufix+=AnE[Math.floor(AnE.length * Math.random())]};
+            if ("Nice"  == currentBoard.players[index].style) {sufix+=NiE[Math.floor(NiE.length * Math.random())]};
             // if ("Human" == currentBoard.players[index].style) {sufix+='🙂'};
             scoreText += sufix
         }
@@ -134,6 +141,7 @@ function drawCurves(maxT = currentBoard.circuitLength) {
     bgCtx.stroke();
     
     // Draw position indicators for each point in pathPoints
+    const homeEmojis = ['🏛️','🛖','🏠','🏡','🏯','🏰','⛺','🏕️'].sort(() => Math.random()-0.5)
     pathPoints.forEach((point, index) => {
         const canvasPoint = pathToCanvas(point);
         const playerIndex = Math.floor(index / currentBoard.layerLength);
@@ -221,7 +229,7 @@ function drawCurves(maxT = currentBoard.circuitLength) {
                 // Add number or icon to the last circle (home)
                 if (i == currentBoard.homeLayerLength) {
                     bgCtx.fillStyle = 'white';
-                    bgCtx.fillText('🏠', homeX, homeY);
+                    bgCtx.fillText(homeEmojis.pop(), homeX, homeY);
                 }
             }
         }
