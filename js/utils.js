@@ -68,15 +68,21 @@ function getPlayerDistinctPawn(listOfPlayers, i, change=false) {
 
 function getRandomArrow() {
     const arrows = '➦ ➧ ➨ ➩ ➪ ➫ ➬ ➭ ➮ ➯ ➱ ➲ ➳ ➵ ➸ ➺ ➻ ➼ ➽ ➾ →'.split(' ');
-    let randomArrow = arrows[Math.floor(Math.random() * arrows.length)];
-    
+    const randomArrow = arrows[Math.floor(Math.random() * arrows.length)];
     return randomArrow;
 }
 
 function getRandomStar() {
     const stars = '✪ ✦ ✧ ★ ✩ ✫ ✬ ✭ ✮ ✯ ✰ ✲ ✳ ✴ ✵ ✶ ✷ ✸ ✹ ✺ ✻ ✼ ✽ ✾ ✿ ❀ ❁ ❂ ❃ ❄ ❅ ❆ ❇ ❈ ❉ ❊ ❋'.split(' ');
-    let randomStar = stars[Math.floor(Math.random() * stars.length)];
+    const randomStar = stars[Math.floor(Math.random() * stars.length)];
     return randomStar;
+}
+
+function getRandomHome(currrentHome="") {
+    const homeEmojis = ['🏛️','🛖','🏠','🏡','🏯','🏰','⛺','🏕️']
+        .filter(home => home != currrentHome);
+    const randomHome = homeEmojis[Math.floor(Math.random() * homeEmojis.length)];
+    return randomHome;
 }
 
 // Get dice face based on value (1-6)

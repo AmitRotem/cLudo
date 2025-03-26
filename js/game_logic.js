@@ -23,10 +23,6 @@
 // see also `handleDiceClick` in `js/animations.js`
 
 
-function getMeanBosonNumbers(player) {
-    return player.patterns.reduce((sum, pattern, j) => math.add(sum, math.multiply(pattern, Math.abs(player.state[j]) ** 2)), 0);
-}
-
 function move(player, i) {
     if (0 > player.locations[i].im && player.die === currentBoard.dieSize) {
         player.locations[i].im = 0;
@@ -42,77 +38,6 @@ function move(player, i) {
     } else {
         console.error(`player ${currentBoard.currentPlayerIndex} dot ${i} cannot move!`);
     }
-}
-
-function selfInteraction(player, i) {
-    const iloc = player.locations[i]
-    const interacting = player.locations.map((jloc, j) => math.equal(iloc, jloc) )
-    if (2 > interacting.length) {return;}
-    // TODO
-    // adjust state and patterns
-}
-
-function project(player, i) {
-    const iloc = player.locations[i];
-    if (0 < iloc.im) {return;} // already in home path
-    if (0 > iloc.im) {console.error(`player ${currentBoard.currentPlayerIndex} dot ${i} cannot project!`); return;} // in starting area
-    if (0 === iloc.im && currentBoard.safeIndcies.includes(iloc.re)) {return;} // safe zone
-    for (let j = 0; j < currentBoard.numPlayers; j++) {
-        if (j == currentBoard.currentPlayerIndex) {
-            continue; // skip current player
-        }
-        const otherPlayer = currentBoard.players[j];
-        for (k = 0; k < currentBoard.numBosons; k++) {
-            if (math.equal(otherPlayer.locations[k], iloc)) {
-                // TODO
-                // dark measure player
-                // if positive
-                // bright measure other players
-                otherPlayer.locations[k] = math.complex(otherPlayer.inputIndex, -k-1);
-            }
-        }
-    }
-        
-}
-
-function projectOnDetector(player, i) {
-    // number resolved detector
-}
-
-
-
-function syncPlayerAndDisplay(player) {
-    // update player.display based on board
-    //
-
-    const dots = player.display.dots;
-    // numBosons
-    console.assert(dots.length === player.numBosons, player, `number of dots is incompatible with numBosons!! got ${dots.length} expected ${player.numBosons}`);
-
-    // inStartingArea
-    console.assert(dots.every((dot,j) => (dot.inStartingArea ? (player.locations[j].im < 0) : (player.locations[j].im>=0))), player, `inStartingArea is incompatible with locations!! dots have ${dots.map(dot => dot.inStartingArea)} but locations are ${player.locations.map(location => location.im)}`);
-
-    // index
-    console.assert(dots.every((dot,j) => (dot.inStartingArea ? true : (dot.index === player.locations[j].re))), player, `index is incompatible with locations!! dots have ${dots.map(dot => dot.index)} but locations are ${player.locations.map(location => location.re)}`);
-
-    // inHomePath
-    console.assert(dots.every((dot,j) => (dot.inHomePath ? (player.locations[j].im === dot.homePathStep) : (player.locations[j].im <= 0))), player, `homePathStep is incompatible with locations!! dots have ${dots.map(dot => dot.inHomePath)} with steps ${dots.map(dot => dot.homePathStep)} but locations are ${player.locations.map(location => location.im)}`);
-    
-
-
-    /// if in home path;
-    // stepsToHome # Int
-
-    // player.state
-    // player.patterns
-    // player.bosonsInPlay # calc from locations ?
-    // player.finishedBosons # calc from locations ?
-}
-
-function syncBoardAndDisplay() {
-    console.assert(currentBoard.players.length === currentBoard.numPlayers, currentBoard, `number of players is incompatible with numPlayers!! got ${currentBoard.players.length} expected ${currentBoard.numPlayers}`);
-    console.assert(currentBoard.players.every(player => player.dieSize === currentBoard.dieSize), currentBoard, `dieSize is incompatible with currentBoard.dieSize!! got ${currentBoard.players.map(player => player.dieSize)} expected ${currentBoard.dieSize}`);
-    currentBoard.players.map(syncPlayerAndDisplay);
 }
 
 
@@ -139,10 +64,6 @@ function moveDotOutOfStartingArea(player, i, moveAmount) {
         dot.inStartingArea = false;
         dot.index = player.inputIndex;
         dot.targetIndex = player.inputIndex;
-        
-        // Quantum
-        move(player, i);
-        selfInteraction(player, i);
 
         // Animate the movement
         playSound('start');
@@ -161,10 +82,6 @@ function moveDotAlongHomePath(player, i, moveAmount) {
     const playerCanvas = player.display;    
     const dot = playerCanvas.dots[i];
     if (moveAmount <= dot.stepsToHome) {
-        // Quantum
-        move(player, i);
-        selfInteraction(player, i);
-        projectOnDetector(player, i);
         // Move along home path
         moveAlongHomePath(player, i, moveAmount, ()=>checkWinCondition(player));
         return;
@@ -176,11 +93,6 @@ function moveDotAlongHomePath(player, i, moveAmount) {
 
 // move dot along main path, and go to `checkForCollision`
 function moveDotAlongMainPath(player, i, moveAmount) {
-    // Quantum
-    move(player, i);
-    selfInteraction(player, i);
-    project(player, i);
-    
     // animate
     console.debug(`moveDotAlongMainPath`);
     const playerCanvas = player.display;
@@ -234,29 +146,16 @@ function checkForCollision(player, i) {
                 continue; // safe zones - safeIndex already checked by current player
             }
             if (dot.index === otherDots[j].index) {
-                // check if there was actually a collision - due to project
-                const Navg = getMeanBosonNumbers(otherPlayer)
-                if ((0 > otherPlayer.locations[j].im) && (0 < Navg[j])) {
-                    // Send the other dot back to starting area
-                    sendDotToStartingArea(otherPlayer, j, (collision ? ()=>{} : ()=>{checkWinCondition(player);}));
-                    if (currentBoard.players[k].autoMove) {
-                        currentBoard.players[k].style = "Angry"; // make autoMover angry
-                    }
-                    if (currentBoard.players[currentBoard.currentPlayerIndex].autoMove) {
-                        currentBoard.players[currentBoard.currentPlayerIndex].style = "Nice"; // relax autoMover
-                    }
-                    collision = true;
-                    currentBoard.extraTurn = true;
-                } else {
-                    console.debug(`No collision! dark measurement!`);
-                    console.debug(`player ${currentBoard.currentPlayerIndex} dot ${i} collided with player ${k} dot ${j}`);
-
-                    otherDots[j].inStartingArea = true;
-                    otherDots[j].index = -1;
-                    otherDots[j].targetIndex = -1;
-                    // TODO make this dot invisible
-                    animateDotTeleport(otherPlayer, j, otherDots[j].startPosition)
+                // Send the other dot back to starting area
+                sendDotToStartingArea(otherPlayer, j, (collision ? ()=>{} : ()=>{checkWinCondition(player);}));
+                if (currentBoard.players[k].autoMove) {
+                    currentBoard.players[k].style = "Angry"; // make autoMover angry
                 }
+                if (currentBoard.players[currentBoard.currentPlayerIndex].autoMove) {
+                    currentBoard.players[currentBoard.currentPlayerIndex].style = "Nice"; // relax autoMover
+                }
+                collision = true;
+                currentBoard.extraTurn = true;
             }
         }
     }
@@ -271,9 +170,6 @@ function checkForCollision(player, i) {
 
 // check if al dots are in home, else, and go to `nextTurn`
 function checkWinCondition(player) {
-    // sync dots with quantum board
-    // measurement ...
-    syncBoardAndDisplay();
     // update score board
     updateScoreBoard();
     // check if all dots are in home

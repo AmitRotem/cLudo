@@ -28,7 +28,7 @@ container.appendChild(bgCanvas);
 // Create title overlay on the canvas
 const gameTitle = document.createElement('div');
 gameTitle.classList.add('background-text');
-gameTitle.textContent = 'qLudo';
+gameTitle.textContent = 'Ludo';
 gameTitle.style.top = '6px';
 gameTitle.style.left = '0px';
 gameTitle.style.fontSize = '36px';

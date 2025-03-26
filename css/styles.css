@@ -29,12 +29,16 @@ html {
 }
 
 body::before {
-    content: '|Ψ⟩';
-    position: absolute;
-    top: 50%;
+    /* content: '|Ψ⟩';
+    top: 55%;
+    left: 56%; */
+    content: 'τ';
+    top: 35%;
     left: 50%;
+    position: absolute;
     transform: translate(-50%, -50%);
-    font-size: 120vh;
+    font-size: 150vh;
+    font-family: serif;
     color: hsla(0, 0%, 0%, 0.02);
     white-space: nowrap;
     z-index: -1;

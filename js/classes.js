@@ -1,8 +1,9 @@
 
 class Player {
-    constructor({ name, color, numBosons, dieSize, autoMove, inputIndex, outputIndex }) {
+    constructor({ name, color, home, numBosons, dieSize, autoMove, inputIndex, outputIndex }) {
         this.name = name;
         this.color = color;
+        this.home = home;
         this.numBosons = numBosons;
         this.dieSize = dieSize;
         this.autoMove = autoMove;
@@ -75,6 +76,7 @@ function createBoard(numPlayers, options = {}) {
     const players = Array.from({ length: numPlayers }, (_, i) => new Player({
         name: getRandomPawn(),
         color: getPlayerColor(i / numPlayers),
+        home: getRandomHome(),
         numBosons: options.numBosons || 4,
         dieSize: options.dieSize || 6,
         autoMove: autoMovers[i],

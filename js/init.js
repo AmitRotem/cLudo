@@ -127,6 +127,27 @@ function handleSetupClick(e) {
             }
         }
     }
+    // Check if clicked on homes
+    const boardCenter = { x: bgCanvas.width / 2, y: bgCanvas.height / 2 };
+    for (let i = 0; i < currentBoard.numPlayers; i++) {
+        const player = currentBoard.players[i];
+        const pivotIndex = player.outputIndex;
+        const pivotPoint = pathPoints[pivotIndex];
+        const canvasPivot = pathToCanvas(pivotPoint);
+        const ratio = currentBoard.homeLayerLength / (currentBoard.homeLayerLength+1);
+        const homePosition = {
+            x: canvasPivot.x + (boardCenter.x - canvasPivot.x) * ratio,
+            y: canvasPivot.y + (boardCenter.y - canvasPivot.y) * ratio
+        };
+        const dx = x - homePosition.x;
+        const dy = y - homePosition.y;
+        if ((dx * dx + dy * dy) <= (player.display.dots[0].radius ** 2)) {
+            player.home = getRandomHome(player.home);
+            drawPlayerDots(player);
+            drawCurves();
+            return;
+        }
+    }
 }
 
 function showPawnSelectionMenu(player) {

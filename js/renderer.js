@@ -141,7 +141,6 @@ function drawCurves(maxT = currentBoard.circuitLength) {
     bgCtx.stroke();
     
     // Draw position indicators for each point in pathPoints
-    const homeEmojis = ['🏛️','🛖','🏠','🏡','🏯','🏰','⛺','🏕️'].sort(() => Math.random()-0.5)
     pathPoints.forEach((point, index) => {
         const canvasPoint = pathToCanvas(point);
         const playerIndex = Math.floor(index / currentBoard.layerLength);
@@ -154,8 +153,8 @@ function drawCurves(maxT = currentBoard.circuitLength) {
         bgCtx.stroke();
 
         bgCtx.lineWidth = 2;
-        // bgCtx.font = 2 * gridRadius + 'px Arial';
-        bgCtx.font = `${2 * gridRadius}px 'Noto Color Emoji', sans-serif`
+        bgCtx.font = 2 * gridRadius + 'px Arial';
+        // bgCtx.font = `${2 * gridRadius}px 'Noto Color Emoji', sans-serif`
         bgCtx.textAlign = 'center';
         bgCtx.textBaseline = 'middle';
         bgCtx.fillStyle = getPlayerColor(index, 100, 96, pathPoints.length); // main path color
@@ -229,7 +228,7 @@ function drawCurves(maxT = currentBoard.circuitLength) {
                 // Add number or icon to the last circle (home)
                 if (i == currentBoard.homeLayerLength) {
                     bgCtx.fillStyle = 'white';
-                    bgCtx.fillText(homeEmojis.pop(), homeX, homeY);
+                    bgCtx.fillText(currentBoard.players[playerIndex].home, homeX, homeY);
                 }
             }
         }
