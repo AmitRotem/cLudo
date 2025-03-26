@@ -23,30 +23,32 @@ function playSound(sound) {
 
 // Animate dice roll when clicked
 function handleDiceClick() {
-    gameState.gameStarted = true;
+    console.debug("die clicked");
+    currentBoard.gameStarted = true;
+    fadeOut(playerControls.container);
     // Prevent multiple rolls in one turn
-    if (gameState.diceRolled || gameState.animating) return;
-    fadeOut(gameState.playerControls.container);
+    if (currentBoard.diceRolled || currentBoard.animating) {updateGameInfo("Please wait for the current move to complete!"); return;}
+    const player = currentBoard.players[currentBoard.currentPlayerIndex];
+    const playerCanvas = player.display;    
     const diceElement = document.getElementById('dice-container');
-    gameState.animating = true;
-    const isAutoMover = gameState.autoMover[gameState.currentPlayerIndex];
-    const allAutoMovers = gameState.autoMover.every(autoMover => autoMover);
-    currentPlayerCanvas = playerCanvases[gameState.currentPlayerIndex];
+    currentBoard.animating = true;
+    const isAutoMover = player.autoMove;
+    const allAutoMovers = currentBoard.players.every(player => player.autoMove);
     // Get player color for highlighting dice
-    const playerColor = players[gameState.currentPlayerIndex].color;
+    const playerColor = player.color;
     diceElement.style.boxShadow = `0 0 15px ${playerColor}`;
-    diceElement.style.fontSize = `${baseUnit * 9}px`;
+    diceElement.style.fontSize = 9 * baseUnit + 'px';
 
     // Power roll
-    const allDotsInStartingArea = currentPlayerCanvas.dots.every(dot => dot.inStartingArea);
-    const allDotsInStartingAreaOrAtHome = currentPlayerCanvas.dots.every(dot => dot.reachedHome || dot.inStartingArea);
+    const allDotsInStartingArea = playerCanvas.dots.every(dot => dot.inStartingArea);
+    const allDotsInStartingAreaOrAtHome = playerCanvas.dots.every(dot => dot.reachedHome || dot.inStartingArea);
 
     // Start shaking animation
     let rotations = 0;
     let lastDice = 1;
     const rollInterval = setInterval(() => {
         // Show random dice face during animation
-        lastDice = Math.floor(Math.random() * gameState.dieFaces) + 1;
+        lastDice = Math.floor(Math.random() * currentBoard.dieSize) + 1;
         diceElement.textContent = getDiceFace(lastDice);
         
         // Apply shake effect
@@ -64,14 +66,15 @@ function handleDiceClick() {
             const rollResult = myMaxRandom(1 + allDotsInStartingAreaOrAtHome + allDotsInStartingArea);
             diceElement.textContent = getDiceFace(rollResult);
             diceElement.style.transform = 'scale(1.2)';
+            console.debug("roll result: "+rollResult);
             
             // Store roll result and update game state
-            gameState.lastRoll = rollResult;
-            gameState.diceRolled = true;
-            gameState.animating = false;
+            currentBoard.players[currentBoard.currentPlayerIndex].die = rollResult;
+            currentBoard.diceRolled = true;
+            currentBoard.animating = false;
 
             // Get moveable dots for current player
-            moveableDots = getMoveableDots(currentPlayerCanvas, rollResult)
+            moveableDots = getMoveableDots(player, rollResult)
             // auto move if all possible moves are the same, or if the player is an auto mover
             // moving out of starting area is considered the same move
             autoMoveDot = isAutoMover || (2 > moveableDots.length)
@@ -83,7 +86,7 @@ function handleDiceClick() {
                 if (autoMoveDot) {
                     autoMove();
                 } else {
-                    animateMoveableDots(currentPlayerCanvas, rollResult);
+                    animateMoveableDots(player, rollResult);
                 }
             }, (allAutoMovers ? fastSpeedFactor : 1)*300);
         }
@@ -92,18 +95,20 @@ function handleDiceClick() {
 
 
 // Animate a sequence of individual steps based on dice roll
-function moveMultipleSteps(playerCanvas, dotIndex, steps, direction, onComplete) {
-    // console.log("moveMultipleSteps");
+function moveMultipleSteps(player, dotIndex, steps, direction, onComplete) {
+    console.debug("moveMultipleSteps")
+    console.debug("moving "+steps+" steps in direction "+direction);
+    const playerCanvas = player.display;
     const dot = playerCanvas.dots[dotIndex];
     let stepsRemaining = steps;
     let currentIndex = dot.index;
-    const allAutoMovers = gameState.autoMover.every(autoMover => autoMover);
+    const allAutoMovers = currentBoard.players.every(player => player.autoMove);
     
     // Function to move a single step
     function moveNextStep() {
         if (stepsRemaining <= 0) {
             // All steps completed
-            gameState.animating = false;
+            currentBoard.animating = false;
             if (onComplete) {
                 onComplete();
             }
@@ -113,7 +118,7 @@ function moveMultipleSteps(playerCanvas, dotIndex, steps, direction, onComplete)
         // Calculate next step's target index
         const targetIndex = (currentIndex + direction + pathPoints.length) % pathPoints.length;
         // Animate the single step
-        animateSingleStep(playerCanvas, dotIndex, targetIndex, () => {
+        animateSingleStep(player, dotIndex, targetIndex, () => {
             // After step completes, prepare for next step
             currentIndex = targetIndex;
             dot.index = targetIndex;
@@ -121,48 +126,49 @@ function moveMultipleSteps(playerCanvas, dotIndex, steps, direction, onComplete)
             
             // Show remaining steps in game info
             if (stepsRemaining > 0) {
-                updateGameInfo(`${playerCanvas.player.name} moving: ${stepsRemaining} steps remaining...`);
+                updateGameInfo(`${player.name} moving: ${stepsRemaining} steps remaining...`);
                 // Delay between steps
                 setTimeout(moveNextStep, ((allAutoMovers || direction<0) ? fastSpeedFactor/5 : 1)*80);
             } else {
                 // All steps completed
-                updateGameInfo(`${playerCanvas.player.name}'s move completed!`);
+                updateGameInfo(`${player.name}'s move completed!`);
                 moveNextStep();
             }
         });
     }
     
     // Start the sequence
-    gameState.animating = true;
-    updateGameInfo(`${playerCanvas.player.name} moving ${steps} steps...`);
+    currentBoard.animating = true;
+    updateGameInfo(`${player.name} moving ${steps} steps...`);
     moveNextStep();
 }
 
 // Move dot along home path
-function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
-    // console.log("moveAlongHomePath");
-    const allAutoMovers = gameState.autoMover.every(autoMover => autoMover);
+function moveAlongHomePath(player, dotIndex, steps, onComplete) {
+    console.debug("moveAlongHomePath");
+    const playerCanvas = player.display;
     const dot = playerCanvas.dots[dotIndex];
+    const allAutoMovers = currentBoard.players.every(player => player.autoMove);
     dot.moving = true;
-    gameState.animating = true;
+    currentBoard.animating = true;
     
     // Get current position in home path
     const currentStep = dot.homePathStep || 0;
     const newStep = currentStep + steps;
     
-    // Check if this would exceed the home (gameState.pathToHome steps)
-    if (newStep > gameState.pathToHome) {
+    // Check if this would exceed the home (currentBoard.homeLayerLength steps)
+    if (newStep > currentBoard.homeLayerLength) {
         error("Invalid move along home path !! should not get to this line of code");
     }
     
     // Get the pivot index and point
-    const pivotIndex = gameState.pivotIndex[gameState.currentPlayerIndex];
+    const pivotIndex = player.outputIndex;
     const pivotPoint = pathPoints[pivotIndex];
     const boardCenter = { x: bgCanvas.width / 2, y: bgCanvas.height / 2 };
     const canvasPivot = pathToCanvas(pivotPoint);
     
-    // Calculate new position (newStep/(gameState.pathToHome+1) of the way to center)
-    const ratio = newStep / (gameState.pathToHome+1);
+    // Calculate new position (newStep/(currentBoard.homeLayerLength+1) of the way to center)
+    const ratio = newStep / (currentBoard.homeLayerLength+1);
     const newPosition = {
         x: canvasPivot.x + (boardCenter.x - canvasPivot.x) * ratio,
         y: canvasPivot.y + (boardCenter.y - canvasPivot.y) * ratio
@@ -173,8 +179,8 @@ function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
     const duration = (allAutoMovers ? fastSpeedFactor : 1)*200 * steps; // Fixed duration for a single step
     const startTime = performance.now();
     
-    updateGameInfo(`${playerCanvas.player.name}'s dot is moving along home path...`);
-    
+    updateGameInfo(`${player.name}'s dot is moving along home path...`);
+
     function animateStep(timestamp) {
         const elapsed = timestamp - startTime;
         const progress = Math.min(elapsed / duration, 1);
@@ -188,21 +194,21 @@ function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
             y: startPosition.y + (newPosition.y - startPosition.y) * (progress - Math.sin(progress*steps*2*Math.PI)/(steps*2*Math.PI))
         };
         
-        drawPlayerDots(playerCanvas);
+        drawPlayerDots(player);
         
         if (progress < 1) {
             requestAnimationFrame(animateStep);
         } else {
             dot.moving = false;
             dot.homePathStep = newStep;
-            dot.stepsToHome = gameState.pathToHome - newStep;
+            dot.stepsToHome = currentBoard.homeLayerLength - newStep;
             dot.inHomePath = true;
-            gameState.animating = false;
+            currentBoard.animating = false;
 
-            if (newStep === gameState.pathToHome) {
+            if (newStep === currentBoard.homeLayerLength) {
                 dot.reachedHome = true;
-                gameState.extraTurn = true;
-                updateGameInfo(`${playerCanvas.player.name}'s dot reached home!`);
+                currentBoard.extraTurn = true;
+                updateGameInfo(`${player.name}'s dot reached home!`);
                 playSound('home');
             }
             if (onComplete) {onComplete();};
@@ -213,23 +219,24 @@ function moveAlongHomePath(playerCanvas, dotIndex, steps, onComplete) {
 }
 
 // Animate teleporting from starting area to path entry point
-function animateDotTeleport(playerCanvas, dotIndex, targetPosition, OnComplete) {
-    // console.log("animateDotTeleport");
+function animateDotTeleport(player, dotIndex, targetPosition, OnComplete) {
+    console.debug("animateDotTeleport");
+    const playerCanvas = player.display;
     const dot = playerCanvas.dots[dotIndex];
     dot.moving = true;
-    gameState.animating = true;
-    const allAutoMovers = gameState.autoMover.every(autoMover => autoMover);
+    currentBoard.animating = true;
+    const allAutoMovers = currentBoard.players.every(player => player.autoMove);
     
     // Get starting position
     const startPosition = {
-        x: dot.startPositions[dot.startingPosition].x,
-        y: dot.startPositions[dot.startingPosition].y
+        x: dot.startPosition.x,
+        y: dot.startPosition.y
     };
     
     const duration = (allAutoMovers ? fastSpeedFactor : 1)*500; // Fixed duration for teleport
     const startTime = performance.now();
     
-    updateGameInfo(`${playerCanvas.player.name}'s dot is ${(dot.inStartingArea ? "exiting" : "entering")} the board!`);
+    updateGameInfo(`${player.name}'s dot is ${(dot.inStartingArea ? "exiting" : "entering")} the board!`);
     
     function animateStep(timestamp) {
         const elapsed = timestamp - startTime;
@@ -247,14 +254,14 @@ function animateDotTeleport(playerCanvas, dotIndex, targetPosition, OnComplete) 
             y: -(currentY - bgCanvas.height / 2) / (bgCanvas.height / 6)
         };
         
-        drawPlayerDots(playerCanvas);
+        drawPlayerDots(player);
         
         if (progress < 1) {
             requestAnimationFrame(animateStep);
         } else {
             dot.moving = false;
             dot.interpolation = undefined;
-            gameState.animating = false;
+            currentBoard.animating = false;
             if (OnComplete) {
                 OnComplete();
             }
@@ -266,13 +273,14 @@ function animateDotTeleport(playerCanvas, dotIndex, targetPosition, OnComplete) 
 
 
 // Animate a single step with callback when complete
-function animateSingleStep(playerCanvas, dotIndex, targetIndex, onComplete) {
-    // console.log("animateSingleStep");
+function animateSingleStep(player, dotIndex, targetIndex, onComplete) {
+    console.debug("animateSingleStep");
+    const playerCanvas = player.display;
     const dot = playerCanvas.dots[dotIndex];
     dot.moving = true;
     dot.targetIndex = targetIndex;
     const startIndex = dot.index;
-    const allAutoMovers = gameState.autoMover.every(autoMover => autoMover);
+    const allAutoMovers = currentBoard.players.every(player => player.autoMove);
     
     const goingBackwards = (targetIndex - startIndex + pathPoints.length) % pathPoints.length > pathPoints.length / 2;
     // Single step animation is always a distance of 1
@@ -303,7 +311,7 @@ function animateSingleStep(playerCanvas, dotIndex, targetIndex, onComplete) {
             console.warn("Animation points not found, using fallback");
         }
         
-        drawPlayerDots(playerCanvas);
+        drawPlayerDots(player);
         
         if (progress < 1) {
             requestAnimationFrame(animateStep);
@@ -321,15 +329,15 @@ function animateSingleStep(playerCanvas, dotIndex, targetIndex, onComplete) {
 }
 
 // Move dot to home path entry and set up remaining steps
-function moveToHomePathEntry(playerCanvas, dotIndex, remainingSteps, onComplete) {
-    // console.log("moveToHomePathEntry");
+function moveToHomePathEntry(player, dotIndex, remainingSteps, onComplete) {
+    console.debug("moveToHomePathEntry");
+    const playerCanvas = player.display;
     const dot = playerCanvas.dots[dotIndex];
     dot.moving = true;
-    gameState.animating = true;
+    currentBoard.animating = true;
     
     // Get the pivot index for this player
-    const playerIndex = gameState.currentPlayerIndex;
-    const pivotIndex = (playerIndex * (sideLength*2+1));
+    const pivotIndex = player.outputIndex;
     
     
     // Calculate steps to pivot
@@ -341,62 +349,67 @@ function moveToHomePathEntry(playerCanvas, dotIndex, remainingSteps, onComplete)
     }
     
     // Animate movement to pivot
-    moveMultipleSteps(playerCanvas, dotIndex, stepsToMove, 1, () => {
+    moveMultipleSteps(player, dotIndex, stepsToMove, 1, () => {
         // Once at pivot, set up for home path
         if (0==remainingSteps) {
-            drawPlayerDots(playerCanvas);
+            drawPlayerDots(player);
             dot.moving = false;
-            gameState.animating = false;
+            currentBoard.animating = false;
             if (onComplete) {onComplete();};
             return;
         }
         dot.inHomePath = true;
         dot.homePathStep = 0;
-        dot.stepsToHome = gameState.pathToHome; // Total steps to reach home
+        dot.stepsToHome = currentBoard.homeLayerLength; // Total steps to reach home
         
         // Calculate home path position
         const pivotPoint = pathPoints[pivotIndex];
         dot.homePathPosition = pathToCanvas(pivotPoint);
         
         // Move along home path by remaining steps
-        moveAlongHomePath(playerCanvas, dotIndex, remainingSteps, onComplete);
+        moveAlongHomePath(player, dotIndex, remainingSteps, onComplete);
     });
 }
 
 
-function animateMoveableDots(currentPlayerCanvas, moveAmount) {
-    const moveableDots = getMoveableDots(currentPlayerCanvas, moveAmount);
+function animateMoveableDots(player, moveAmount, animateAll = false) {
+    let whoCanMove = Array.from({length: player.numBosons}, (_, i) => true);
+    let moveableDots = player.display.dots;
+    if (!animateAll) {
+        whoCanMove = checkWhoCanMove(player, moveAmount);
+        moveableDots = player.display.dots.filter((_, i) => whoCanMove[i]);
+    };
+    moveableDots.forEach(dot => {
+        dot.moving = true;
+    });
     let counter = 0;
     const interval = 100;
     const moveableDotsInterval = setInterval(() => {
         counter++;
         // Apply shake effect
-        moveableDots.forEach(dot => {
-            dot.moving = true;
-        });
-        const whoCanMove = Array(...currentPlayerCanvas.dots.map(dot => moveableDots.includes(dot)));
         const randomX = whoCanMove.map((canMove, index) => canMove * Math.sin(counter*interval/1000 *                2 * Math.PI * (0.95+0.1*index/moveableDots.length)) * baseUnit * Math.cos((1+2*(0.5+index)/moveableDots.length) * Math.PI/8) * 0.3);
         const randomY = whoCanMove.map((canMove, index) => canMove * Math.sin(counter*interval/1000 * (Math.sqrt(5)+1) * Math.PI * (0.95+0.1*index/moveableDots.length)) * baseUnit * Math.sin((1+2*(0.5+index)/moveableDots.length) * Math.PI/8) * 0.3);
-        drawPlayerDots(currentPlayerCanvas, randomX, randomY);
-        if (gameState.animating) {
+        drawPlayerDots(player, randomX, randomY);
+        if (currentBoard.animating) {
             clearInterval(moveableDotsInterval);
         }
     }, interval);
 }
 
 
-function sendDotToStartingArea(playerCanvas, i, onComplete) {
+function sendDotToStartingArea(player, i, onComplete) {
+    const playerCanvas = player.display;
     const dot = playerCanvas.dots[i];
     // dot.inStartingArea = true;
-    let moveAmount = dot.index - dot.pathEntryIndex;
+    let moveAmount = dot.index - player.inputIndex;
     if (moveAmount < 0) {
         moveAmount += pathPoints.length;
     };
-    moveMultipleSteps(playerCanvas, i, moveAmount, -1, ()=>{
+    moveMultipleSteps(player, i, moveAmount, -1, ()=>{
         dot.inStartingArea = true;
         dot.index = -1;
         dot.targetIndex = -1;
-        animateDotTeleport(playerCanvas, i, dot.startPositions[dot.startingPosition], onComplete);
+        animateDotTeleport(player, i, dot.startPosition, onComplete);
     });
 }
 

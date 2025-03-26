@@ -32,20 +32,33 @@ function getPlayerColor(k, s=100, l=50, playerCount=1) {
     return `hsl(${r * 360}, ${s}%, ${l}%)`
 }
 
+function getAllPawns() {
+    return ['🐒','🦍','🦧','🐕','🦮','🐕‍🦺','🐩','🐈','🐈‍⬛','🐅','🐆',
+        '🫏','🐎','🦌','🦬','🐂','🐃','🐄','🐖','🐏','🐑','🐐',
+        '🐪','🐫','🦙','🦒','🐘','🦣','🦏','🦛','🐁','🐀','🐇',
+        '🐿️','🦫','🦔','🦇','🦥','🦦','🦨','🦘','🦡','🦃','🐓',
+        '🐣','🐤','🐥','🐦','🐧','🕊️','🦅','🦆','🦢','🦉','🦤',
+        '🦩','🦚','🦜','🐦‍⬛','🪿','🐦‍🔥','🐊','🐢','🦎','🐍','🐉',
+        '🦕','🦖','🐳','🐋','🐬','🦭','🐟','🐠','🐡','🦈','🐙',
+        '🐚','🪸','🪼','🦀','🦞','🦐','🦑','🦪','🐌','🦋','🐛',
+        '🐜','🐝','🪲','🐞','🦗','🕷️','🦂','🦟','🪰','🪱','🦠',
+        '⛄', '☃️', '👻'];
+}
+
 function getRandomPawn(ty = 0) {
     const pawns = [
-        ['🐒', '🦍', '🦧', '🐕', '🦮', '🐕‍🦺', '🐩', '🐈', '🐈‍⬛', '🐅', '🐆', '🐎', '🦓', '🦌', '🦬', '🐂', '🐃', '🐄', '🐖', '🐏', '🐑', '🐐', '🐪', '🐫', '🦙', '🦒', '🐘', '🦣', '🦏', '🦛', '🐁', '🐀', '🐇', '🐿️', '🦫', '🦔', '🦇', '🦥', '🦦', '🦨', '🦘', '🦡', '🦃', '🐓', '🐣', '🐤', '🐥', '🐦', '🐧', '🕊️', '🦅', '🦆', '🦢', '🦉', '🦤', '🦩', '🦚', '🦜', '🐊', '🐢', '🦎', '🐍', '🐉', '🦕', '🦖', '🐳', '🐋', '🐬', '🦭', '🐟', '🐠', '🐡', '🦈', '🐙', '🐚', '🪸', '🦀', '🦞', '🦐', '🦑', '🦪', '🐌', '🦋', '🐛', '🐜', '🐝', '🪲', '🐞', '🦗', '🕷️', '🦂', '🦟', '🪰', '🪱', '🦠', '☃️', '⛄'],
+        [...getAllPawns()],
         '😀 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😛 😝 😜 🤪 🤨 🧐 🤓 😎 🥸 🤩 🥳 😏 😒 😞 😔 😟 😕 🙁 ☹️ 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 🤯 😳 🥵 🥶 😱 😨 😰 😥 😓 🤗 🤔 🤭 🤫 🤥 😶 😐 😑 😬 🙄 😯 😦 😧 😮 😲 🥱 😴 🤤 😪 😵 🤐 🥴 🤢 🤮 🤧 😷 🤒 🤕 🤑 🤠'.split(' ')
     ];
     return pawns[ty][Math.floor(Math.random() * pawns[ty].length)]
 }
 
-function getPlayerDistinctPawn(playerCanvases,i,change=false) {
-    const pl = playerCanvases[i].player
-    const oldPawn = pl.name;
+function getPlayerDistinctPawn(listOfPlayers, i, change=false) {
+    const currentPlayer = listOfPlayers[i];
+    const oldPawn = currentPlayer.name;
     for (k = 0; k < 1000; k++) {
-        if (playerCanvases.some((pc,j) => j!=i && pc.player.name == pl.name) || (change && pl.name == oldPawn)) {
-            pl.name = getRandomPawn();
+        if (listOfPlayers.some((pl,j) => j!=i && pl.name == currentPlayer.name) || (change && currentPlayer.name == oldPawn)) {
+            currentPlayer.name = getRandomPawn();
         } else {
             return;
         }
@@ -55,15 +68,21 @@ function getPlayerDistinctPawn(playerCanvases,i,change=false) {
 
 function getRandomArrow() {
     const arrows = '➦ ➧ ➨ ➩ ➪ ➫ ➬ ➭ ➮ ➯ ➱ ➲ ➳ ➵ ➸ ➺ ➻ ➼ ➽ ➾ →'.split(' ');
-    let randomArrow = arrows[Math.floor(Math.random() * arrows.length)];
-    
+    const randomArrow = arrows[Math.floor(Math.random() * arrows.length)];
     return randomArrow;
 }
 
 function getRandomStar() {
-    const stars = '✪ ✦ ✧ ★ ✩ ✫ ✬ ✭ ✮ ✯ ✰ ✱ ✲ ✳ ✴ ✵ ✶ ✷ ✸ ✹ ✺ ✻ ✼ ✽ ✾ ✿ ❀ ❁ ❂ ❃ ❄ ❅ ❆ ❇ ❈ ❉ ❊ ❋'.split(' ');
-    let randomStar = stars[Math.floor(Math.random() * stars.length)];
+    const stars = '✪ ✦ ✧ ★ ✩ ✫ ✬ ✭ ✮ ✯ ✰ ✲ ✳ ✴ ✵ ✶ ✷ ✸ ✹ ✺ ✻ ✼ ✽ ✾ ✿ ❀ ❁ ❂ ❃ ❄ ❅ ❆ ❇ ❈ ❉ ❊ ❋'.split(' ');
+    const randomStar = stars[Math.floor(Math.random() * stars.length)];
     return randomStar;
+}
+
+function getRandomHome(currrentHome="") {
+    const homeEmojis = ['🏛️','🛖','🏠','🏡','🏯','🏰','⛺','🏕️']
+        .filter(home => home != currrentHome);
+    const randomHome = homeEmojis[Math.floor(Math.random() * homeEmojis.length)];
+    return randomHome;
 }
 
 // Get dice face based on value (1-6)
@@ -77,6 +96,8 @@ function cumsum(arr) {
     return arr.map(value => sum += value);
 }
 
+//
+// TODO; define simple permanent function
 
 // Default parametric function
 function pulse(theta, frequency, phaseOffset) {
@@ -86,14 +107,13 @@ function pulse(theta, frequency, phaseOffset) {
     return 2*(1-(0.5-0.5*drt)**p1)**p2 - 1;
 }
 
-
 function path(t) {
     const amplitude = 0.5;
-    const frequency = gameState.numberOfPlayers;
+    const frequency = currentBoard.numPlayers;
     const phaseOffset = (frequency % 2 == 0 ? -0.5 : -0.75)/frequency * 2 * Math.PI - Math.PI / 2;
-    const theta = (-t/gameState.maxT) * 2 * Math.PI;
+    const theta = (-t/currentBoard.circuitLength) * 2 * Math.PI;
     
-    const radius = gameState.boardRadius;
+    const radius = currentBoard.boardRadius;
     const drt = pulse(theta, frequency, 0);
     const xc = radius * (1 + amplitude * drt) * Math.cos(theta+phaseOffset);
     const yc = radius * (1 + amplitude * drt) * Math.sin(theta+phaseOffset);
