@@ -5,15 +5,6 @@
 // Win condition checking
 
 // TODO
-// player.bosonsInPlay # calc from locations ?
-// player.finishedBosons # calc from locations ?
-// define selfInteraction
-// define project
-// define projectOnDetector
-// define syncPlayerAndDisplay
-
-
-// TODO later
 // larger board - change `boardSizeFactor` and `boardRadius` (in config.js) dynamically ? 
 // background color ~ in `styles.css` in `body`
 // always widescreen - no screen rotation
@@ -23,29 +14,13 @@
 // see also `handleDiceClick` in `js/animations.js`
 
 
-function move(player, i) {
-    if (0 > player.locations[i].im && player.die === currentBoard.dieSize) {
-        player.locations[i].im = 0;
-    } else if (0 <= player.locations[i].im) {
-        for (let j = 0; j < player.die; j++) {
-            if (player.outputIndex == player.locations[i].re) {
-                player.locations[i].im++;
-            } else {
-                player.locations[i].re++;
-                player.locations[i].re = player.locations[i].re % currentBoard.circuitLength
-            }
-        }
-    } else {
-        console.error(`player ${currentBoard.currentPlayerIndex} dot ${i} cannot move!`);
-    }
-}
-
-
-
 let testMode = false
 function myMaxRandom(numberOfDices = 1) {
     numberOfDices > 1 && console.debug(`Rolling ${numberOfDices} dice`);
     const rolls = Array.from({ length: numberOfDices }, () => Math.floor(Math.random() * currentBoard.dieSize) + 1);
+    if (numberOfDices > 1) {
+        console.log(`Rolled: ${rolls}`);
+    }
     if (testMode) {
         const userNumber = parseInt(prompt("Enter a number:"));
         return userNumber;
