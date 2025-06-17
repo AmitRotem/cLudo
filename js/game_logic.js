@@ -13,7 +13,7 @@
 // see also `nextTurn` in `js/script.js`
 // see also `handleDiceClick` in `js/animations.js`
 
-
+console.log("`testMode=true` to manually enter a roll value, or `testMode=false` (default) to use random rolls.");
 let testMode = false
 function myMaxRandom(numberOfDices = 1) {
     numberOfDices > 1 && console.debug(`Rolling ${numberOfDices} dice`);

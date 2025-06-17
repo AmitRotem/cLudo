@@ -1,3 +1,4 @@
+console.log("`testDice([N=2**14])` to test the dice rolls");
 function testDice(N = 2**14) {
     let rolls = Array.from({ length: N }, () => myMaxRandom());
     const occurences = rolls.reduce((acc, value) => {
@@ -17,14 +18,17 @@ function testDice(N = 2**14) {
     const corr = [c1/c0]
 
     updateGameInfo(`mean occurences * 6 ${mean} ;; corr ${[corr]}`);
+    return [mean, corr]
 }
 
+console.log("`test1()` to toggle test mode. currently does nothing.");
 function test1() {
     testMode = !testMode;
     console.log(`Test mode: ${testMode}`);
     return null;
 }
 
+console.log("`test2()` to toggle auto play mode for all players.");
 function test2() {
     currentBoard.players.forEach(player => {
         player.autoMove = true;
