@@ -156,7 +156,7 @@ function showPawnSelectionMenu(player) {
     selectionMenu.style.top = '50%';
     selectionMenu.style.left = '50%';
     selectionMenu.style.transform = 'translate(-50%, -50%)';
-    selectionMenu.style.backgroundColor = 'white';
+    selectionMenu.style.backgroundColor = "black";
     selectionMenu.style.border = '1px solid black';
     selectionMenu.style.padding = '10px';
     selectionMenu.style.zIndex = '1000';
