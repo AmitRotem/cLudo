@@ -408,8 +408,8 @@ function sendDotToStartingArea(player, i, onComplete) {
     };
     moveMultipleSteps(player, i, moveAmount, -1, ()=>{
         dot.inStartingArea = true;
-        dot.index = -1;
-        dot.targetIndex = -1;
+        dot.index = dot.startIndex;
+        dot.targetIndex = dot.startIndex;
         animateDotTeleport(player, i, dot.startPosition, onComplete);
     });
 }

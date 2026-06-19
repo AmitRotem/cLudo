@@ -51,7 +51,7 @@ function moveDotOutOfStartingArea(player, i, moveAmount) {
     console.debug(`moveDotOutOfStartingArea`);
     const playerCanvas = player.display;    
     // Can only move out with when rolling `currentBoard.dieSize`
-    if (moveAmount === currentBoard.dieSize) {
+    if (moveAmount === currentBoard.dieSize || moveAmount === -playerCanvas.dots[i].startIndex) {
         const dot = playerCanvas.dots[i];
         // Move to the starting position on the path
         dot.inStartingArea = false;
@@ -64,7 +64,7 @@ function moveDotOutOfStartingArea(player, i, moveAmount) {
             ()=>nextTurn());
         return;
     } else {
-        updateGameInfo(`Need to roll a ${currentBoard.dieSize} to move out! Try another dot.`);
+        updateGameInfo(`Need to roll a ${currentBoard.dieSize} or ${-playerCanvas.dots[i].startIndex} to move that dot out! Try another dot.`);
         return;
     }
 }
@@ -188,7 +188,7 @@ function checkWhoCanMove(player, moveAmount) { // list of true/false if dot can 
     const dots = playerCanvas.dots;
     // check which dot can move
     const canMove = dots.map(dot => {
-        if (dot.inStartingArea && moveAmount === currentBoard.dieSize) {
+        if (dot.inStartingArea && (moveAmount === currentBoard.dieSize || moveAmount === -dot.startIndex)) {
             return true;
         } else if (!dot.inStartingArea && !dot.inHomePath) {
             const pivotIndex = player.outputIndex;

@@ -414,9 +414,10 @@ function initializeDots() {
                 inHomePath: false,
                 homePathStep: 0,
                 startPosition: {x:0, y:0},
-                index: -1,
+                startIndex: -i-1,
+                index: -i-1,
                 moving: false,
-                targetIndex: -1,
+                targetIndex: -i-1,
                 radius: baseUnit
             });
         }
