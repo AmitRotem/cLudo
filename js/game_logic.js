@@ -15,17 +15,35 @@
 
 console.log("`testMode=true` to manually enter a roll value, or `testMode=false` (default) to use random rolls.");
 let testMode = false
-function myMaxRandom(numberOfDices = 1) {
-    numberOfDices > 1 && console.debug(`Rolling ${numberOfDices} dice`);
-    const rolls = Array.from({ length: numberOfDices }, () => Math.floor(Math.random() * currentBoard.dieSize) + 1);
-    if (numberOfDices > 1) {
-        console.log(`Rolled: ${rolls}`);
-    }
+
+function myDice(numberOfDices = 1) {
     if (testMode) {
         const userNumber = parseInt(prompt("Enter a number:"));
         return userNumber;
     }
+    return myMaxRetry(numberOfDices);
+}
+
+function myMaxRetry(numberOfDices = 1) {
+    let roll = simpleDice();
+    while (roll < currentBoard.dieSize && numberOfDices > 1) {
+        roll = simpleDice();
+        numberOfDices--;
+    }
+    return roll;
+}
+
+function myMaxRandom(numberOfDices = 1) {
+    numberOfDices > 1 && console.debug(`Rolling ${numberOfDices} dice`);
+    const rolls = Array.from({ length: numberOfDices }, simpleDice);
+    if (numberOfDices > 1) {
+        console.log(`Rolled: ${rolls}`);
+    }
     return Math.max(...rolls);
+}
+
+function simpleDice() {
+    return Math.floor(Math.random() * currentBoard.dieSize) + 1;
 }
 
 // get dot out of starting area, and go to `nextTurn`
@@ -199,6 +217,7 @@ function checkWhoCanMove(player, moveAmount) { // list of true/false if dot can 
 }
 
 function getMoveableDots(player, moveAmount) {
+    console.debug(`getMoveableDots`);
     const canMove = checkWhoCanMove(player, moveAmount)
     return player.display.dots.filter((_, i) => canMove[i]);
 }

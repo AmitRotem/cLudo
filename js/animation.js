@@ -63,7 +63,7 @@ function handleDiceClick() {
             clearInterval(rollInterval);
             
             // Final result
-            const rollResult = myMaxRandom(1 + allDotsInStartingAreaOrAtHome + allDotsInStartingArea);
+            const rollResult = myDice(1 + allDotsInStartingAreaOrAtHome + allDotsInStartingArea);
             diceElement.textContent = getDiceFace(rollResult);
             diceElement.style.transform = 'scale(1.2)';
             console.debug("roll result: "+rollResult);
@@ -373,6 +373,7 @@ function moveToHomePathEntry(player, dotIndex, remainingSteps, onComplete) {
 
 
 function animateMoveableDots(player, moveAmount, animateAll = false) {
+    console.debug("animateMoveableDots");
     let whoCanMove = Array.from({length: player.numBosons}, (_, i) => true);
     let moveableDots = player.display.dots;
     if (!animateAll) {

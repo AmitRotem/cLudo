@@ -1,6 +1,6 @@
 console.log("`testDice([N=2**14])` to test the dice rolls");
 function testDice(N = 2**14) {
-    let rolls = Array.from({ length: N }, () => myMaxRandom());
+    let rolls = Array.from({ length: N }, () => myDice());
     const occurences = rolls.reduce((acc, value) => {
         acc[value - 1]++;
         return acc;
