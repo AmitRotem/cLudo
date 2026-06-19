@@ -64,6 +64,7 @@ function handleDiceClick() {
             
             // Final result
             const rollResult = myDice(1 + allDotsInStartingAreaOrAtHome + allDotsInStartingArea);
+            player.diceHistory[rollResult-1] += 1;
             diceElement.textContent = getDiceFace(rollResult);
             diceElement.style.transform = 'scale(1.2)';
             console.debug("roll result: "+rollResult);

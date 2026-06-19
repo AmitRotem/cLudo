@@ -21,6 +21,7 @@ function updateScoreBoard() {
             scoreText += sufix
         }
         scoreText += `<br>`;
+        console.debug(`${player.name} dice history: ${player.diceHistory}`)
     });
     scoreBoard.innerHTML = scoreText;
 }
