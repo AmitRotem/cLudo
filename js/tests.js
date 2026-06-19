@@ -1,11 +1,12 @@
 console.log("`testDice([N=2**14])` to test the dice rolls");
 function testDice(N = 2**14) {
-    let rolls = Array.from({ length: N }, () => myDice());
+    let rolls = Array.from({ length: N }, myDice);
     const occurences = rolls.reduce((acc, value) => {
         acc[value - 1]++;
         return acc;
     }, [0,0,0,0,0,0]);
-    const meanOccurences = occurences.map(occurence => (occurence / N - 1 / 6)/(Math.sqrt(5/N)/6));
+    console.log(`occurences ${occurences}`);
+    const meanOccurencesDiv = occurences.map(occurence => (occurence / N - 1 / 6)/(Math.sqrt(5/N)/6));
     
     const meanRolls = rolls.reduce((a, b) => a + b, 0) / N
     rolls = rolls.map(value => value - meanRolls);
@@ -14,10 +15,11 @@ function testDice(N = 2**14) {
     let c1 = rolls.slice(0, -1).map((value, index) => value * rolls[index + 1])
     c1 = c1.reduce((acc, value) => acc + value, 0) / (rolls.length-1)
 
-    const mean = meanOccurences.map(value => Math.round(value * 10000) / 10000)
+    const mean = meanOccurencesDiv.map(value => Math.round(value * 10000) / 10000)
     const corr = [c1/c0]
 
-    updateGameInfo(`mean occurences * 6 ${mean} ;; corr ${[corr]}`);
+    updateGameInfo(`mean occurence diviation ${mean} [SD] ;; corr ${[corr]}`);
+    console.log(`mean occurence diviation ${mean} [SD] ;; corr ${[corr]}`);
     return [mean, corr]
 }
 
