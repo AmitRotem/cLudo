@@ -2,13 +2,13 @@
 * don't get stuck in start
     - triple roll if all pawn in start
     - double roll if all pawn either in start or end
+    - allow pawn #n to move out if rolled n
 * 1-n players
 * PvP, PvC, CvC
 
 # turn-based system
 - roll dice
-- choose which pawn to move (if rolled 6 can move out of home)
-    - a pawn represents 
+- choose which pawn to move (pawn #n can move out of home if rolled n or rolled 6)
 - move pawn animation
     - also checks if passing via the pivot point - if so, move to home path
 - if reached end, measure self, number of finished pawns is the outcome
