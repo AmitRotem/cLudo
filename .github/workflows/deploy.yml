@@ -12,23 +12,26 @@ permissions:
 
 jobs:
   deploy:
+    environment:
+      name: github-pages # 👈 This line fixes the 400 error
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetches full history so git log can see the commit date
+          fetch-depth: 0
 
       - name: Format Commit Date
         id: get_date
         run: |
-          # 1. Fetch the absolute date from the commit log
+          # Fetch the date from the commit log
           RAW_DATE=$(git log -1 --format=%cd --date=format:'%b. %-d, %Y %H:%M:%S')
           
-          # 2. Convert to lowercase letters to match "apr. 5, 2017"
+          # Convert to lowercase letters
           FORMATTED_DATE=$(echo "$RAW_DATE" | tr '[:upper:]' '[:lower:]')
           
-          # 3. Save it as an environment variable for the next step
+          # Save it as an environment variable
           echo "commit_date=$FORMATTED_DATE" >> $GITHUB_ENV
 
       - name: Inject Commit Data into HTML
@@ -36,7 +39,7 @@ jobs:
           # Replaces the title placeholder with the formatted date
           sed -i "s/COMMIT_DATE_PLACEHOLDER/${{ env.commit_date }}/g" index.html
           
-          # Replaces the body placeholder with the SHA string for your app's update checker
+          # Replaces the body placeholder with the SHA string
           sed -i "s/LATEST_COMMIT_SHA/${{ github.sha }}/g" index.html
 
       - name: Upload artifact
@@ -45,4 +48,5 @@ jobs:
           path: '.'
 
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
