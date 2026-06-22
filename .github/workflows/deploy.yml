@@ -1,0 +1,48 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Change to master if your default branch is named master
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches full history so git log can see the commit date
+
+      - name: Format Commit Date
+        id: get_date
+        run: |
+          # 1. Fetch the absolute date from the commit log
+          RAW_DATE=$(git log -1 --format=%cd --date=format:'%b. %-d, %Y %H:%M:%S')
+          
+          # 2. Convert to lowercase letters to match "apr. 5, 2017"
+          FORMATTED_DATE=$(echo "$RAW_DATE" | tr '[:upper:]' '[:lower:]')
+          
+          # 3. Save it as an environment variable for the next step
+          echo "commit_date=$FORMATTED_DATE" >> $GITHUB_ENV
+
+      - name: Inject Commit Data into HTML
+        run: |
+          # Replaces the title placeholder with the formatted date
+          sed -i "s/COMMIT_DATE_PLACEHOLDER/${{ env.commit_date }}/g" index.html
+          
+          # Replaces the body placeholder with the SHA string for your app's update checker
+          sed -i "s/LATEST_COMMIT_SHA/${{ github.sha }}/g" index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

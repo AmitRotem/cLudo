@@ -262,3 +262,36 @@ window.onload = function() {
     }, 100);
 };
 
+
+// version checker
+async function checkVersion() {
+    const localCommit = document.body.getAttribute("data-commit");
+
+    // Skip verification if running locally or placeholder hasn't been replaced
+    if (!localCommit || localCommit === "LATEST_COMMIT_SHA") return;
+
+    const owner = "AmitRotem";
+    const repo = "cLudo";
+    const url = `https://github.com/${owner}/${repo}/commits/main?t=${Date.now()}`;
+    try {
+    const response = await fetch(url);
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const remoteCommit = data.sha;
+
+    // Compare the first 7 characters of the SHA hash
+    if (localCommit.substring(0, 7) !== remoteCommit.substring(0, 7)) {
+        // Notify the player! You can replace this alert with a nice UI banner later
+        alert("A new update for Ludo is available! The page will reload.");
+        window.location.reload();
+    }
+    } catch (e) {
+    console.error("Version check failed", e);
+    }
+    console.debug("Version check complete");
+}
+
+// Run the check 3 seconds after loading, then re-check every 3 minutes
+setTimeout(checkVersion, 3000);
+setInterval(checkVersion, 1000 * 60 * 3);
