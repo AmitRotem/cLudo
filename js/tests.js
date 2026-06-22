@@ -34,7 +34,7 @@ console.log("`test2()` to toggle auto play mode for all players.");
 function test2() {
     currentBoard.players.forEach(player => {
         player.autoMove = true;
-        player.style = ['Naive', 'Angry', 'Nice'][Math.floor(Math.random() * 3)];
+        player.style = ['Naive', 'Angry', 'Nice', 'Crazy'][Math.floor(Math.random() * 4)];
     });
     console.log(`Test mode 2: auto play on`);
     handleDiceClick();

@@ -14,7 +14,7 @@
 // see also `handleDiceClick` in `js/animations.js`
 
 console.log("`testMode=true` to manually enter a roll value, or `testMode=false` (default) to use random rolls.");
-let testMode = false
+let testMode = false;
 
 function myDice(numberOfDices = 1) {
     if (testMode) {
@@ -50,7 +50,7 @@ function simpleDice() {
 function moveDotOutOfStartingArea(player, i, moveAmount) {
     console.debug(`moveDotOutOfStartingArea`);
     const playerCanvas = player.display;    
-    // Can only move out with when rolling `currentBoard.dieSize`
+    // Can only move out with when rolling `currentBoard.dieSize` or dot's index
     if (moveAmount === currentBoard.dieSize || moveAmount === -playerCanvas.dots[i].startIndex) {
         const dot = playerCanvas.dots[i];
         // Move to the starting position on the path
@@ -75,7 +75,7 @@ function moveDotAlongHomePath(player, i, moveAmount) {
     const playerCanvas = player.display;    
     const dot = playerCanvas.dots[i];
     if (moveAmount <= dot.stepsToHome) {
-        // Move along home path
+        // Move along home path animation
         moveAlongHomePath(player, i, moveAmount, ()=>checkWinCondition(player));
         return;
     } else {
@@ -141,10 +141,10 @@ function checkForCollision(player, i) {
             if (dot.index === otherDots[j].index) {
                 // Send the other dot back to starting area
                 sendDotToStartingArea(otherPlayer, j, (collision ? ()=>{} : ()=>{checkWinCondition(player);}));
-                if (currentBoard.players[k].autoMove) {
+                if (currentBoard.players[k].autoMove && currentBoard.players[k].style != "Crazy") {
                     currentBoard.players[k].style = "Angry"; // make autoMover angry
                 }
-                if (currentBoard.players[currentBoard.currentPlayerIndex].autoMove) {
+                if (currentBoard.players[currentBoard.currentPlayerIndex].autoMove && currentBoard.players[currentBoard.currentPlayerIndex].style != "Crazy") {
                     currentBoard.players[currentBoard.currentPlayerIndex].style = "Nice"; // relax autoMover
                 }
                 collision = true;
@@ -161,7 +161,7 @@ function checkForCollision(player, i) {
     return collision;
 }
 
-// check if al dots are in home, else, and go to `nextTurn`
+// check if all dots are in home, else, go to `nextTurn`
 function checkWinCondition(player) {
     // update score board
     updateScoreBoard();
@@ -173,7 +173,7 @@ function checkWinCondition(player) {
         playSound('win');
         currentBoard.gameEnded = true;
         window.dispatchEvent(new Event('resize'));
-        animateMoveableDots(player, 0, true)
+        animateMoveableDots(player, 0, true);
 
         return true;
     } else {
@@ -196,7 +196,7 @@ function checkWhoCanMove(player, moveAmount) { // list of true/false if dot can 
             const featureIndex = Array.from({ length: moveAmount + 1 }, (_, i) => (dot.index + i) % pathPoints.length);
             console.debug(`featureIndex: ${featureIndex}`);
             const willReachPivot = featureIndex.includes(pivotIndex);
-            console.debug
+            console.debug(`willReachPivot: ${willReachPivot}`);
             if (!willReachPivot) {return true;};
             console.debug(`willReachPivot: ${willReachPivot}`);
             const stepsAfterPivot = moveAmount - featureIndex.findIndex(index => index === pivotIndex);
@@ -288,6 +288,16 @@ function autoMove() {
             if (!canMove[i]             ) {moveScore[i] -= 100} // can move
             moveScore[i] += Math.random() * 0.01; // add some randomness
         }
+    } else if ("Crazy" == playerType) {
+        for (let i = 0; i < dots.length; i++) {
+            if (!canMove[i]             ) {moveScore[i] -= 100} // can move
+            if (dotsInSafeZone[i]       ) {moveScore[i] += 3} // don't move if already in safe zone
+            if (dotsGettingToSafeZone[i]) {moveScore[i] -= 5} // move to safe zone
+            if (dotsGettingHome[i]      ) {moveScore[i] += 2} // move home
+            if (dotsInStartingArea[i]   ) {moveScore[i] += 4} // move out of starting area
+            if (dotsColliding[i]        ) {moveScore[i] += 8} //
+            moveScore[i] += Math.random() * 0.01; // add some randomness
+        } 
     } else {ErrorEvent("Unknown player type!")}
     
     const dotIndex = moveScore.indexOf(Math.max(...moveScore));

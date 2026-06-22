@@ -16,9 +16,11 @@ function updateScoreBoard() {
             const NaE = ['😇']; // 🙃😊
             const AnE = ['😈','👿'];
             const NiE = ['🤔']; // 😏😎
+            const CrE = ['🤪'];
             if ("Naive" == currentBoard.players[index].style) {sufix+=NaE[Math.floor(NaE.length * Math.random())]};
             if ("Angry" == currentBoard.players[index].style) {sufix+=AnE[Math.floor(AnE.length * Math.random())]};
             if ("Nice"  == currentBoard.players[index].style) {sufix+=NiE[Math.floor(NiE.length * Math.random())]};
+            if ("Crazy" == currentBoard.players[index].style) {sufix+=CrE[Math.floor(CrE.length * Math.random())]};
             // if ("Human" == currentBoard.players[index].style) {sufix+='🙂'};
             scoreText += sufix
         }

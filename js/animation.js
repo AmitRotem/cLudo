@@ -63,7 +63,7 @@ function handleDiceClick() {
             clearInterval(rollInterval);
             
             // Final result
-            const rollResult = myDice(1 + allDotsInStartingAreaOrAtHome + allDotsInStartingArea);
+            const rollResult = myDice(1); // + allDotsInStartingAreaOrAtHome + allDotsInStartingArea);
             player.diceHistory[rollResult-1] += 1;
             diceElement.textContent = getDiceFace(rollResult);
             diceElement.style.transform = 'scale(1.2)';

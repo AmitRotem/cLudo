@@ -337,7 +337,8 @@ function createAutoButton() {
     autoButton.addEventListener('click', () => {
         console.debug('Auto button clicked');
         currentBoard.players[currentBoard.currentPlayerIndex].autoMove = true;
-        currentBoard.players[currentBoard.currentPlayerIndex].style = ['Naive', 'Angry', 'Nice'][Math.floor(Math.random() * 3)];
+        currentBoard.players[currentBoard.currentPlayerIndex].style = ['Naive', 'Angry', 'Nice', 'Crazy'
+        ][Math.floor(Math.random() * 4)];
         console.log(`Player ${currentBoard.currentPlayerIndex} is now an auto mover`);
         handleDiceClick();
     });

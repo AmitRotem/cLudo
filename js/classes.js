@@ -17,7 +17,7 @@ class Player {
         this.bosonsInPlay = 0; // dynamic
         this.finishedBosons = 0; // dynamic
         this.score = 0; // dynamic
-        this.style = autoMove ? ['Naive', 'Angry', 'Nice'][Math.floor(Math.random() * 3)] : 'Human'; // dynamic
+        this.style = autoMove ? ['Naive', 'Angry', 'Nice', 'Crazy'][Math.floor(Math.random() * 4)] : 'Human'; // dynamic
         this.display = null; // dynamic
         /// display contains:
         /// canvas, ctx
