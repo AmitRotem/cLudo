@@ -13,7 +13,7 @@ permissions:
 jobs:
   deploy:
     environment:
-      name: github-pages # 👈 This line fixes the 400 error
+      name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
@@ -36,11 +36,9 @@ jobs:
 
       - name: Inject Commit Data into HTML
         run: |
-          # Replaces the title placeholder with the formatted date
-          sed -i "s/COMMIT_DATE_PLACEHOLDER/${{ env.commit_date }}/g" index.html
-          
-          # Replaces the body placeholder with the SHA string
-          sed -i "s/LATEST_COMMIT_SHA/${{ github.sha }}/g" index.html
+          # Use a temporary file path to guarantee Linux updates the stream correctly
+          sed "s/COMMIT_DATE_PLACEHOLDER/${{ env.commit_date }}/g" index.html > temp.html && mv temp.html index.html
+          sed "s/LATEST_COMMIT_SHA/${{ github.sha }}/g" index.html > temp.html && mv temp.html index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
