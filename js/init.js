@@ -287,10 +287,11 @@ async function checkVersion() {
         window.location.reload();
     }
     } catch (e) {
-    console.error("Version check failed", e);
+        console.error("Version check failed", e);
+    } finally {
+        console.debug("Version check complete");
     }
 }
 
-// Run the check 3 seconds after loading, then re-check every 3 minutes
+// Run the check 3 seconds after loading
 setTimeout(checkVersion, 3000);
-setInterval(checkVersion, 1000 * 60 * 3);
