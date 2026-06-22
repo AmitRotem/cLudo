@@ -272,7 +272,7 @@ async function checkVersion() {
 
     const owner = "AmitRotem";
     const repo = "cLudo";
-    const url = `https://github.com/${owner}/${repo}/commits/main?t=${Date.now()}`;
+    const url = `https://api.github.com/repos/${owner}/${repo}/commits/main?t=${Date.now()}`;
     try {
     const response = await fetch(url);
     if (!response.ok) return;
@@ -289,7 +289,6 @@ async function checkVersion() {
     } catch (e) {
     console.error("Version check failed", e);
     }
-    console.debug("Version check complete");
 }
 
 // Run the check 3 seconds after loading, then re-check every 3 minutes
