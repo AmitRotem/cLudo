@@ -4,8 +4,10 @@ function updateScoreBoard() {
     const scores = calcScore();
     let scoreText = '<br><br>Scores:<br>';
     currentBoard.players.forEach((player, index) => {
-        // make the player emoji name colorful
-        scoreText += `<span style="font-family: 'Noto Color Emoji', sans-serif">`;
+        // make colored square then the player emoji name
+        color_box = `<span style="display:inline-block; width: 1em; height: 1em; background-color: ${player.color}; margin-right: 0.5em;"></span>`;
+        scoreText += color_box;
+        scoreText += `<span style="font-family: 'Noto Color Emoji', sans-serif;">`;
         scoreText += player.name;
         scoreText += `</span> : `
         scoreText += scores[index]
@@ -145,7 +147,7 @@ function drawCurves(maxT = currentBoard.circuitLength) {
     pathPoints.forEach((point, index) => {
         const canvasPoint = pathToCanvas(point);
         const playerIndex = Math.floor(index / currentBoard.layerLength);
-        const startColor = getPlayerColor(playerIndex / currentBoard.numPlayers, 100, 50);
+        const startColor = getPlayerColor(playerIndex);
         // Draw circle at each step position with scaled radius
         bgCtx.strokeStyle = '#666666'; // outer circle color
         bgCtx.lineWidth = baseUnit * 0.1;
@@ -158,7 +160,7 @@ function drawCurves(maxT = currentBoard.circuitLength) {
         // bgCtx.font = `${2 * gridRadius}px 'Noto Color Emoji', sans-serif`
         bgCtx.textAlign = 'center';
         bgCtx.textBaseline = 'middle';
-        bgCtx.fillStyle = getPlayerColor(index, 100, 96, pathPoints.length); // main path color
+        bgCtx.fillStyle = getPlayerColor(index/pathPoints.length*currentBoard.numPlayers, 0.6, currentBoard.numPlayers); // main path color
         bgCtx.fill();
         bgCtx.fillStyle = 'black'; // Reset color for text
         // Style the circle based on position
@@ -210,7 +212,7 @@ function drawCurves(maxT = currentBoard.circuitLength) {
             // Add home path - `currentBoard.homeLayerLength-1` circles toward center
             const boardCenter = { x: bgCanvas.width / 2, y: bgCanvas.height / 2 };
             const playerIndex = Math.floor(index / (currentBoard.layerLength));
-            const homeColor = getPlayerColor(playerIndex / currentBoard.numPlayers, 100, 50);
+            const homeColor = getPlayerColor(playerIndex, 0.02);
             
             // Draw path to center
             for (let i = 1; i <= currentBoard.homeLayerLength; i++) {

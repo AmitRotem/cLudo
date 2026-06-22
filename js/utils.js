@@ -26,11 +26,42 @@ function fadeOut(element, speed = 20) {
     }, speed);
 }
 
-function getPlayerColor(k, s=100, l=50, playerCount=1) {
-    // return color based on player index
-    const r = k/playerCount;
-    return `hsl(${r * 360}, ${s}%, ${l}%)`
+
+// The official Tableau / Matplotlib / Julia :tab10 palette
+const JULIA_TAB10_PALETTE = [
+  "#1f77b4", // 1. Blue
+  "#ff7f0e", // 2. Orange
+  "#2ca02c", // 3. Green
+  "#d62728", // 4. Red
+  "#9467bd", // 5. Purple
+  "#8c564b", // 6. Brown
+  "#e377c2", // 7. Pink
+  "#7f7f7f", // 8. Gray
+  "#bcbd22", // 9. Olive / Yellow-Green
+  "#17becf"  // 10. Cyan / Teal
+];
+
+function getTab10Color(index, cycle=JULIA_TAB10_PALETTE.length) {
+  const safeIndex = index % cycle;
+  return JULIA_TAB10_PALETTE[safeIndex];
 }
+
+
+function getPlayerColor(k, l=0, cycle=JULIA_TAB10_PALETTE.length) {
+    // return color based on player index
+    // hex to hsl conversion
+    k = math.mod(k, cycle);
+    const c0 = getTab10Color(Math.floor(k), cycle);
+    const c1 = getTab10Color(Math.ceil(k), cycle);
+    return whitenColor(chroma.mix(c0, c1, k%1), l)
+    // const r = k/playerCount;
+    // return `hsl(${r * 360 + 15}, ${s}%, ${l}%)`
+}
+
+function whitenColor(color, l=0.1) {
+    return chroma.mix(color, 'white', l);
+}
+
 
 function getAllPawns() {
     return ['🐒','🦍','🦧','🐕','🦮','🐕‍🦺','🐩','🐈','🐈‍⬛','🐅','🐆',

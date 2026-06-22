@@ -211,8 +211,7 @@ function drawPlayerDots(player, shiftXlist=0, shiftYlist=0) {
         playerCanvas.ctx.arc(canvasPoint.x+shiftX, canvasPoint.y+shiftY, dot.radius, 0, Math.PI * 2);
         // playerCanvas.ctx.strokeStyle = '#888888';
         // playerCanvas.ctx.stroke();
-        player.color.split("(")[0] === "hsl" || error("Color should be in hsl format");
-        playerCanvas.ctx.fillStyle = `hsla(${player.color.split("(")[1].split(")")[0]}, 0.5)`; // dot background color
+        playerCanvas.ctx.fillStyle = player.color.alpha(0.8); // dot background color
         playerCanvas.ctx.fill();
         playerCanvas.ctx.font = `${2.5 * baseUnit}px 'Noto Color Emoji', sans-serif`; // change emoji size
         playerCanvas.ctx.textAlign = 'center';

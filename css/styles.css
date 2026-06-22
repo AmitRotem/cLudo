@@ -92,7 +92,7 @@ canvas {
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) { 
     body { 
-        background-color: hsla(0, 100%, 1%, 0.9); 
+        background-color: hsla(0, 0%, 5%, 0.9); 
     }
     body::before {
         color: hsla(0, 0%, 100%, 0.02);

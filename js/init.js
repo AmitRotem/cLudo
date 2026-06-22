@@ -204,7 +204,7 @@ function updateDiceLocation(resetFace) {
         resetFace && (diceElement.textContent = '🎲');
         resetFace && (diceElement.style.fontSize = 5.2 * baseUnit + 'px');
         diceElement.style.boxShadow = `0 0 10px ${player.color}`;
-        diceElement.style.backgroundColor = "hsla"+player.color.slice(3,-1)+", 0.1)";
+        diceElement.style.backgroundColor = player.color.alpha(0.2);
         const pivotIndex = player.outputIndex;
         const pivotPoint = pathPoints[pivotIndex];
         // set die position
@@ -221,7 +221,8 @@ function updateDiceLocation(resetFace) {
 }
 
 // Move to next player's turn
-function nextTurn() {    
+function nextTurn() {
+    updateScoreBoard();
     // remove auto button if last player
     const autoButton = document.getElementById('auto-container');
     currentBoard.diceRolled && currentBoard.currentPlayerIndex == currentBoard.numPlayers - 1 && (autoButton.style.display = 'none');

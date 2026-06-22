@@ -75,7 +75,7 @@ function createBoard(numPlayers, options = {}) {
     const safeIndcies = [].concat(...Array.from({ length: numPlayers }, (_, i) => layerSafeIndcies.map(index => index + i * layerLength))).sort((a, b) => a - b);
     const players = Array.from({ length: numPlayers }, (_, i) => new Player({
         name: getRandomPawn(),
-        color: getPlayerColor(i / numPlayers),
+        color: getPlayerColor(i),
         home: getRandomHome(),
         numBosons: options.numBosons || 4,
         dieSize: options.dieSize || 6,
