@@ -142,10 +142,26 @@ function checkForCollision(player, i) {
                 // Send the other dot back to starting area
                 sendDotToStartingArea(otherPlayer, j, (collision ? ()=>{} : ()=>{checkWinCondition(player);}));
                 if (currentBoard.players[k].autoMove && currentBoard.players[k].style != "Crazy") {
-                    currentBoard.players[k].style = "Angry"; // make autoMover angry
+                    if (Math.random() < 0.8) {
+                        currentBoard.players[k].style = "Angry"; // make autoMover angry
+                    } else {
+                        currentBoard.players[k].style = "Crazy"; // make autoMover crazy
+                    }
                 }
-                if (currentBoard.players[currentBoard.currentPlayerIndex].autoMove && currentBoard.players[currentBoard.currentPlayerIndex].style != "Crazy") {
-                    currentBoard.players[currentBoard.currentPlayerIndex].style = "Nice"; // relax autoMover
+                if (currentBoard.players[currentBoard.currentPlayerIndex].autoMove) {
+                    if (currentBoard.players[currentBoard.currentPlayerIndex].style == "Crazy") {
+                        if (Math.random() < 0.5) {
+                            currentBoard.players[currentBoard.currentPlayerIndex].style = "Angry"; // make autoMover angry
+                        } else {
+                            if (Math.random() < 0.5) {
+                                currentBoard.players[currentBoard.currentPlayerIndex].style = "Nice"; // make autoMover nice
+                            } else {
+                                currentBoard.players[currentBoard.currentPlayerIndex].style = "Naive"; // make autoMover naive
+                            }
+                        }
+                    } else {
+                        currentBoard.players[currentBoard.currentPlayerIndex].style = "Nice"; // relax autoMover
+                    }
                 }
                 collision = true;
                 currentBoard.extraTurn = true;
@@ -258,10 +274,10 @@ function autoMove() {
             if (!canMove[i]             ) {moveScore[i] -= 100} // can move
             if (dotsInSafeZone[i]       ) {moveScore[i] -= 0} // don't move if already in safe zone
             if (dotsGettingToSafeZone[i]) {moveScore[i] += 0} // move to safe zone
-            if (dotsGettingHome[i]      ) {moveScore[i] += 2} // move home
-            if (dotsInStartingArea[i]   ) {moveScore[i] += 4} // move out of starting area
-            if (dotsColliding[i]        ) {moveScore[i] -= 8} //
-            moveScore[i] += Math.random() * 0.01; // add some randomness
+            if (dotsGettingHome[i]      ) {moveScore[i] += 1} // move home
+            if (dotsInStartingArea[i]   ) {moveScore[i] += 2} // move out of starting area
+            if (dotsColliding[i]        ) {moveScore[i] -= 1} //
+            moveScore[i] += Math.random() * 2; // add some randomness
         }
     } else if ("Angry" == playerType) {
         for (let i = 0; i < dots.length; i++) {
@@ -269,9 +285,9 @@ function autoMove() {
             if (dotsInSafeZone[i]       ) {moveScore[i] -= 1} // don't move if already in safe zone
             if (dotsGettingToSafeZone[i]) {moveScore[i] += 1} // move to safe zone
             if (dotsGettingHome[i]      ) {moveScore[i] += 2} // move home
-            if (dotsInStartingArea[i]   ) {moveScore[i] += 4} // move out of starting area
+            if (dotsInStartingArea[i]   ) {moveScore[i] += 3} // move out of starting area
             if (dotsColliding[i]        ) {moveScore[i] += 8} //
-            moveScore[i] += Math.random() * 0.01; // add some randomness
+            moveScore[i] += Math.random() * 2; // add some randomness
         }
     } else if ("Nice" == playerType) {
         for (let i = 0; i < dots.length; i++) {
@@ -279,7 +295,7 @@ function autoMove() {
             if (dotsInSafeZone[i]       ) {moveScore[i] -= 1} // don't move if already in safe zone
             if (dotsGettingToSafeZone[i]) {moveScore[i] += 1} // move to safe zone
             if (dotsGettingHome[i]      ) {moveScore[i] += 2} // move home
-            if (dotsInStartingArea[i]   ) {moveScore[i] += 4} // move out of starting area
+            if (dotsInStartingArea[i]   ) {moveScore[i] += 3} // move out of starting area
             if (dotsColliding[i]        ) {moveScore[i] -= 0.1} //
             moveScore[i] += Math.random() * 0.01; // add some randomness
         }
@@ -292,11 +308,11 @@ function autoMove() {
         for (let i = 0; i < dots.length; i++) {
             if (!canMove[i]             ) {moveScore[i] -= 100} // can move
             if (dotsInSafeZone[i]       ) {moveScore[i] += 3} // don't move if already in safe zone
-            if (dotsGettingToSafeZone[i]) {moveScore[i] -= 5} // move to safe zone
+            if (dotsGettingToSafeZone[i]) {moveScore[i] += 1} // move to safe zone
             if (dotsGettingHome[i]      ) {moveScore[i] += 2} // move home
             if (dotsInStartingArea[i]   ) {moveScore[i] += 4} // move out of starting area
             if (dotsColliding[i]        ) {moveScore[i] += 8} //
-            moveScore[i] += Math.random() * 0.01; // add some randomness
+            moveScore[i] += Math.random() * 1.2; // add some randomness
         } 
     } else {ErrorEvent("Unknown player type!")}
     
