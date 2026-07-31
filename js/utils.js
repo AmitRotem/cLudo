@@ -154,3 +154,41 @@ function path(t) {
 function phaseFactor(i, N) {
     return (i + (N % 2 == 0 ? 0.35 : 0.6)) * 2 * Math.PI / N + Math.PI / 2; // Fix phase here
 }
+
+// Daily game counter helpers (uses localStorage — no cookie consent required)
+function getGameStats() {
+    const today = new Date().toLocaleDateString();
+    let stats;
+    try {
+        stats = JSON.parse(localStorage.getItem('ludoGameStats'));
+    } catch(e) { stats = null; }
+    if (!stats || stats.date !== today) {
+        stats = { date: today, started: 0, ended: 0 };
+        localStorage.setItem('ludoGameStats', JSON.stringify(stats));
+    }
+    return stats;
+}
+
+function saveGameStats(stats) {
+    localStorage.setItem('ludoGameStats', JSON.stringify(stats));
+}
+
+function markGameStarted() {
+    const stats = getGameStats();
+    stats.started++;
+    saveGameStats(stats);
+    updateCounterDisplay(stats);
+}
+
+function markGameEnded() {
+    const stats = getGameStats();
+    stats.ended++;
+    saveGameStats(stats);
+    updateCounterDisplay(stats);
+}
+
+function updateCounterDisplay(stats) {
+    if (!stats) { stats = getGameStats(); }
+    const el = document.getElementById('game-counter');
+    if (el) { el.textContent = `${stats.ended}(${stats.started})`; }
+}

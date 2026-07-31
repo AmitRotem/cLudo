@@ -183,17 +183,19 @@ function showPawnSelectionMenu(player) {
             player.name = pawn;
             drawPlayerDots(player);
             updateScoreBoard();
-            document.body.removeChild(selectionMenu);
+            removePawnSelectionMenu();
         });
         selectionMenu.appendChild(pawnButton);
     });
 
     document.body.appendChild(selectionMenu);
+    setGameControlsEnabled(false);
 }
 
 function removePawnSelectionMenu() {
     const selectionMenu = document.getElementById('pawn-selection-menu');
     selectionMenu && document.body.removeChild(selectionMenu);
+    setGameControlsEnabled(true);
 }
 
 function updateDiceLocation(resetFace) {
@@ -227,6 +229,17 @@ function nextTurn() {
     const autoButton = document.getElementById('auto-container');
     currentBoard.diceRolled && currentBoard.currentPlayerIndex == currentBoard.numPlayers - 1 && (autoButton.style.display = 'none');
     
+    // Increment turn count for the player who just moved
+    currentBoard.turnsHistory[currentBoard.currentPlayerIndex]++;
+
+    // Check if the game should be counted as started
+    if (!currentBoard.gameCountedAsStarted
+        && Math.min(...currentBoard.turnsHistory) >= 2 * currentBoard.numPlayers
+        && currentBoard.players.some(p => !p.autoMove)) {
+        markGameStarted();
+        currentBoard.gameCountedAsStarted = true;
+    }
+
     // Move to next player
     (currentBoard.dieSize === currentBoard.players[currentBoard.currentPlayerIndex].die) || currentBoard.extraTurn || (playSound('turn'), currentBoard.currentPlayerIndex++);
     currentBoard.currentPlayerIndex = currentBoard.currentPlayerIndex % currentBoard.numPlayers;
