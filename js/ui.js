@@ -343,5 +343,29 @@ function createAutoButton() {
         handleDiceClick();
     });
     container.appendChild(autoButton);
+
+    // Game counter display (sits behind the auto button, z-index 99)
+    const counterEl = document.createElement('div');
+    counterEl.id = 'game-counter';
+    counterEl.style.position = 'absolute';
+    counterEl.style.bottom = '10px';
+    counterEl.style.right = '10px';
+    counterEl.style.zIndex = '99';
+    counterEl.style.color = '#FFD700';
+    counterEl.style.fontSize = '14px';
+    counterEl.style.pointerEvents = 'none';
+    counterEl.style.textAlign = 'right';
+    container.appendChild(counterEl);
+    updateCounterDisplay();
+}
+
+function setGameControlsEnabled(enabled) {
+    const diceEl = document.getElementById('dice-container');
+    const autoEl = document.getElementById('auto-container');
+    const opacity = enabled ? '' : '0.4';
+    const pointer = enabled ? '' : 'none';
+    if (diceEl)  { diceEl.style.opacity  = opacity; diceEl.style.pointerEvents  = pointer; }
+    if (autoEl)  { autoEl.style.opacity  = opacity; autoEl.style.pointerEvents  = pointer; }
+    if (gameTitle) { gameTitle.style.opacity = opacity; gameTitle.style.pointerEvents = enabled ? 'auto' : pointer; }
 }
 
