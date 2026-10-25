@@ -183,17 +183,19 @@ function showPawnSelectionMenu(player) {
             player.name = pawn;
             drawPlayerDots(player);
             updateScoreBoard();
-            document.body.removeChild(selectionMenu);
+            removePawnSelectionMenu();
         });
         selectionMenu.appendChild(pawnButton);
     });
 
     document.body.appendChild(selectionMenu);
+    setGameControlsEnabled(false);
 }
 
 function removePawnSelectionMenu() {
     const selectionMenu = document.getElementById('pawn-selection-menu');
     selectionMenu && document.body.removeChild(selectionMenu);
+    setGameControlsEnabled(true);
 }
 
 function updateDiceLocation(resetFace) {
@@ -211,12 +213,51 @@ function updateDiceLocation(resetFace) {
         const factor = 1.25;
         const canvasPivot = pathToCanvas({x: pivotPoint.x*factor, y: pivotPoint.y*factor});
         // snap position to edge of canvas
+        const isRightSide = canvasPivot.x >= bgCanvas.width / 2;
         canvasPivot.x < bgCanvas.width/2 && (canvasPivot.x = diceElement.offsetWidth);
         canvasPivot.x >= bgCanvas.width/2 && (canvasPivot.x = bgCanvas.width - diceElement.offsetWidth);
-        canvasPivot.y = Math.min(Math.max(diceElement.offsetHeight, canvasPivot.y), bgCanvas.height-diceElement.offsetHeight)
+        canvasPivot.y = Math.min(Math.max(diceElement.offsetHeight, canvasPivot.y), bgCanvas.height-diceElement.offsetHeight);
+
+        const margin = baseUnit * 0.5;
+        const diceHalfW = diceElement.offsetWidth / 2;
+        const diceHalfH = diceElement.offsetHeight / 2;
+
+        // Problem 1: avoid overlap with auto button on right side
+        if (isRightSide) {
+            const autoBtn = document.getElementById('auto-container');
+            if (autoBtn && autoBtn.style.display !== 'none') {
+                const autoBtnRect = autoBtn.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const autoBtnTop = autoBtnRect.top - containerRect.top;
+                const diceBottom = canvasPivot.y + diceHalfH;
+                if (diceBottom + margin > autoBtnTop) {
+                    canvasPivot.x = bgCanvas.width - diceElement.offsetWidth - autoBtn.offsetWidth - margin;
+                }
+            }
+        }
+
+        // Problem 2: avoid overlap with title on left side
+        if (!isRightSide && gameTitle) {
+            const titleRect = gameTitle.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const titleBottom = titleRect.bottom - containerRect.top;
+            const titleRight  = titleRect.right  - containerRect.left;
+            const diceTop = canvasPivot.y - diceHalfH;
+            if (diceTop < titleBottom + margin) {
+                // Try shifting right
+                const correctedX = titleRight + diceHalfW + margin;
+                if (correctedX < bgCanvas.width / 3) {
+                    canvasPivot.x = correctedX;
+                } else {
+                    // Fallback: shift down instead
+                    canvasPivot.y = titleBottom + diceHalfH + margin;
+                }
+            }
+        }
+
         // place die
-        diceElement.style.left = `${canvasPivot.x - diceElement.offsetWidth / 2}px`;
-        diceElement.style.top = `${canvasPivot.y - diceElement.offsetHeight / 2}px`;
+        diceElement.style.left = `${canvasPivot.x - diceHalfW}px`;
+        diceElement.style.top = `${canvasPivot.y - diceHalfH}px`;
     }
 }
 
@@ -227,6 +268,17 @@ function nextTurn() {
     const autoButton = document.getElementById('auto-container');
     currentBoard.diceRolled && currentBoard.currentPlayerIndex == currentBoard.numPlayers - 1 && (autoButton.style.display = 'none');
     
+    // Increment turn count for the player who just moved
+    currentBoard.turnsHistory[currentBoard.currentPlayerIndex]++;
+
+    // Check if the game should be counted as started
+    if (!currentBoard.gameCountedAsStarted
+        && Math.min(...currentBoard.turnsHistory) >= 2 * currentBoard.numPlayers
+        && currentBoard.players.some(p => !p.autoMove)) {
+        markGameStarted();
+        currentBoard.gameCountedAsStarted = true;
+    }
+
     // Move to next player
     (currentBoard.dieSize === currentBoard.players[currentBoard.currentPlayerIndex].die) || currentBoard.extraTurn || (playSound('turn'), currentBoard.currentPlayerIndex++);
     currentBoard.currentPlayerIndex = currentBoard.currentPlayerIndex % currentBoard.numPlayers;

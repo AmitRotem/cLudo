@@ -57,6 +57,7 @@ class Board {
         this.extraTurn = false;
         this.gameStarted = false;
         this.gameEnded = false;
+        this.gameCountedAsStarted = false;
         this.animating = false;
         this.display = {};
     }

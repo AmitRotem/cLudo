@@ -188,6 +188,7 @@ function checkWinCondition(player) {
         updateGameInfo(`🎉 ${player.name} has won the game! 🎉     click title to reset.`);
         playSound('win');
         currentBoard.gameEnded = true;
+        markGameEnded();
         window.dispatchEvent(new Event('resize'));
         animateMoveableDots(player, 0, true);
 
