@@ -1,7 +1,5 @@
 # Ludo
 * don't get stuck in start
-    - triple roll if all pawn in start
-    - double roll if all pawn either in start or end
     - allow pawn #n to move out if rolled n
 * 1-n players
 * PvP, PvC, CvC
@@ -28,7 +26,7 @@ simple heuristic-based AI
         1. not to collide with others
         1. move pawns out of start
         1. move pawns into home
-    - becomes angry when sent back to start
+    - becomes angry (sometimes Crazy) when sent back to start
 * Angry
     - priority;
         1. to collide with others
@@ -44,5 +42,11 @@ simple heuristic-based AI
         1. get pawns to safe spots
         1. keep pawns in safe spots
         1. not to collide with others
-    - becomes angry when sent back to start
-    
+    - becomes angry (sometimes Crazy) when sent back to start
+* Crazy
+    - priority;
+        1. to collide with others
+        1. move pawns out of start
+        1. get pawns out of safe spots
+        1. move pawns into home
+    -may changes status when sending others back to start
